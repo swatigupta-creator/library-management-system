@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: library-management-system
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+    healthCheckPath: /api/books
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false

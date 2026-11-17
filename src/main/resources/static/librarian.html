@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System - Librarian Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">📚</span>
+                <span>Library Management System</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/index.html">Home</a></li>
+                    <li><a href="/books.html">Browse Books</a></li>
+                    <li><a href="/librarian.html" class="active">Librarian Portal</a></li>
+                    <li>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Librarian: <strong id="logged-user-name" style="color: var(--primary);">librarian</strong></span>
+                            <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Top Header & Live Stats -->
+        <div style="margin-bottom: 1.5rem;">
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">Librarian Administration Portal</h1>
+            <p style="color: var(--text-muted);">Manage books inventory, register library members, and handle book issues and returns.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">📖</div>
+                <div class="stat-details">
+                    <h3>Total Titles</h3>
+                    <div class="stat-number" id="stat-total-books">-</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">✅</div>
+                <div class="stat-details">
+                    <h3>Available Copies</h3>
+                    <div class="stat-number" id="stat-available-copies">-</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber">⏳</div>
+                <div class="stat-details">
+                    <h3>Currently Issued</h3>
+                    <div class="stat-number" id="stat-issued-copies">-</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">👥</div>
+                <div class="stat-details">
+                    <h3>Members</h3>
+                    <div class="stat-number" id="stat-total-members">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="books">📖 Books Management</button>
+            <button class="tab-btn" data-tab="members">👥 Members</button>
+            <button class="tab-btn" data-tab="loans">🔄 Issue &amp; Return Loans</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: BOOKS MANAGEMENT                   -->
+        <!-- ========================================== -->
+        <div id="tab-books" class="tab-content active">
+            <!-- Add Book Form Card -->
+            <div class="table-card" style="padding: 1.75rem; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary);">➕ Add New Book to Catalog</h2>
+                <form id="add-book-form">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="book-title">Book Title *</label>
+                            <input type="text" id="book-title" class="form-control" placeholder="e.g. Clean Code" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="book-author">Author *</label>
+                            <input type="text" id="book-author" class="form-control" placeholder="e.g. Robert C. Martin" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="book-isbn">ISBN *</label>
+                            <input type="text" id="book-isbn" class="form-control" placeholder="e.g. 978-0132350884" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="book-category">Category *</label>
+                            <input type="text" id="book-category" class="form-control" placeholder="e.g. Software Engineering" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="book-copies">Total Copies *</label>
+                            <input type="number" id="book-copies" class="form-control" min="1" max="1000" value="3" required>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="add-book-btn" class="btn btn-primary">Add Book to Database</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Existing Books Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Library Books Inventory</h2>
+                    <a href="/books.html" target="_blank" class="btn btn-outline btn-sm">👁️ View Public Catalog</a>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>ISBN</th>
+                                <th>Availability</th>
+                                <th style="width: 170px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="librarian-books-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading books...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: MEMBERS MANAGEMENT                 -->
+        <!-- ========================================== -->
+        <div id="tab-members" class="tab-content">
+            <!-- Add Member Form Card -->
+            <div class="table-card" style="padding: 1.75rem; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary);">➕ Register New Member</h2>
+                <form id="add-member-form">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="member-name">Full Name *</label>
+                            <input type="text" id="member-name" class="form-control" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="member-email">Email Address *</label>
+                            <input type="email" id="member-email" class="form-control" placeholder="e.g. john@example.com" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="member-phone">Phone Number *</label>
+                            <input type="tel" id="member-phone" class="form-control" placeholder="e.g. +91 9876543210" required>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="add-member-btn" class="btn btn-primary">Register Member</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Members Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Registered Library Members</h2>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Member Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Joined Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="librarian-members-tbody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading members...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: ISSUE & RETURN (LOANS)             -->
+        <!-- ========================================== -->
+        <div id="tab-loans" class="tab-content">
+            <!-- Issue Book Form -->
+            <div class="table-card" style="padding: 1.75rem; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary);">📤 Issue Book to Member</h2>
+                <form id="issue-book-form">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="issue-member-id">Select Member *</label>
+                            <select id="issue-member-id" class="form-control" required>
+                                <option value="">Loading members...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="issue-book-id">Select Book to Issue *</label>
+                            <select id="issue-book-id" class="form-control" required>
+                                <option value="">Loading books...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="issue-date">Issue Date *</label>
+                            <input type="date" id="issue-date" class="form-control" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="due-date">Due Date *</label>
+                            <input type="date" id="due-date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
+                        <label for="issue-notes">Notes / Remarks (Optional)</label>
+                        <input type="text" id="issue-notes" class="form-control" placeholder="e.g. Standard 14-day checkout">
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="issue-book-btn" class="btn btn-primary">Confirm &amp; Issue Book</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Loans History & Active Returns Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Loan Records &amp; Returns</h2>
+                    <div class="filter-group">
+                        <button class="btn btn-primary btn-sm loan-filter-btn" data-filter="ALL">All Loans</button>
+                        <button class="btn btn-outline btn-sm loan-filter-btn" data-filter="ISSUED">⏳ Active Issued</button>
+                        <button class="btn btn-outline btn-sm loan-filter-btn" data-filter="RETURNED">✅ Returned</button>
+                    </div>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Loan #</th>
+                                <th>Book Title</th>
+                                <th>Member Name</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th style="width: 140px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="librarian-loans-tbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading loan records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Edit Book Modal -->
+    <div id="edit-book-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>✏️ Edit Book Details</h3>
+                <button type="button" onclick="closeEditModal()" style="background: none; border: none; font-size: 1.3rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="edit-book-form">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-book-id">
+                    <div class="form-group">
+                        <label for="edit-book-title">Book Title</label>
+                        <input type="text" id="edit-book-title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-book-author">Author</label>
+                        <input type="text" id="edit-book-author" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-book-isbn">ISBN</label>
+                        <input type="text" id="edit-book-isbn" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-book-category">Category</label>
+                        <input type="text" id="edit-book-category" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-book-copies">Total Copies</label>
+                        <input type="number" id="edit-book-copies" class="form-control" min="1" max="1000" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" id="update-book-btn" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Library Management System &copy; 2026. Built with Spring Boot, MySQL &amp; Vanilla JavaScript.</p>
+    </footer>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/librarian.js"></script>
+</body>
+</html>

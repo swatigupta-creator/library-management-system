@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System - Home</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/index.html" class="logo">
+                <span class="logo-icon">📚</span>
+                <span>Library Management System</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/index.html" class="active">Home</a></li>
+                    <li><a href="/books.html">Browse Books</a></li>
+                    <li id="nav-auth-item">
+                        <a href="/login.html" class="nav-btn">Librarian Login</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Simple &amp; Realistic Library System</h1>
+            <p>Explore our library collection, search books by title or author, and track book availability in real-time. Librarians can manage records, issue books to members, and process returns seamlessly.</p>
+            <div class="hero-actions">
+                <a href="/books.html" class="btn btn-accent">🔍 Explore Books Catalog</a>
+                <a href="/librarian.html" id="hero-librarian-btn" class="btn btn-primary" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4);">Librarian Portal</a>
+            </div>
+        </section>
+
+        <!-- Live Statistics Counter -->
+        <section>
+            <h2 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--text-main);">📊 Library Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📖</div>
+                    <div class="stat-details">
+                        <h3>Book Titles</h3>
+                        <div class="stat-number" id="stat-total-books">-</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-details">
+                        <h3>Available Copies</h3>
+                        <div class="stat-number" id="stat-available-copies">-</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon amber">⏳</div>
+                    <div class="stat-details">
+                        <h3>Issued Copies</h3>
+                        <div class="stat-number" id="stat-issued-copies">-</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">👥</div>
+                    <div class="stat-details">
+                        <h3>Registered Members</h3>
+                        <div class="stat-number" id="stat-total-members">-</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Overview -->
+        <section style="margin-top: 1.5rem;">
+            <div class="table-card" style="padding: 2rem;">
+                <h2 style="margin-bottom: 1.25rem;">Key System Highlights</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🔍 Real-time Search</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Filter books instantly by Title or Author directly connected to MySQL database.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">📦 Dynamic Inventory</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">When a book is issued, available count decreases. When returned, available count increases automatically.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🔒 Librarian Control</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Secure librarian session to add/edit/delete books, register members, and manage loan due dates.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>Library Management System &copy; 2026. Built with Spring Boot, MySQL &amp; Vanilla JavaScript.</p>
+    </footer>
+
+    <script src="/js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth status to adjust navigation
+            const auth = await checkAuthStatus();
+            const navAuthItem = document.getElementById('nav-auth-item');
+            if (auth && auth.authenticated) {
+                navAuthItem.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <a href="/librarian.html" class="nav-btn">Librarian Dashboard</a>
+                        <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
+                    </div>
+                `;
+            }
+
+            // Load real-time stats from backend
+            try {
+                const res = await fetch('/api/loans/stats');
+                const result = await res.json();
+                if (result.success && result.data) {
+                    const stats = result.data;
+                    document.getElementById('stat-total-books').textContent = stats.totalBooks;
+                    document.getElementById('stat-available-copies').textContent = stats.availableCopies;
+                    document.getElementById('stat-issued-copies').textContent = stats.issuedCopies;
+                    document.getElementById('stat-total-members').textContent = stats.totalMembers;
+                }
+            } catch (err) {
+                console.error('Failed to load stats', err);
+            }
+        });
+    </script>
+</body>
+</html>
