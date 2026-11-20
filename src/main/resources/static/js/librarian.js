@@ -8,30 +8,85 @@ let currentLoans = [];
 let activeLoanFilter = 'ALL';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Enforce Authentication (Librarian/Admin only)
+    // 1. Initialize Tabs & Forms
+    setupTabs();
+    setupForms();
+
+    // 2. Check Authentication (Librarian/Admin only)
     const auth = await checkAuthStatus();
     if (!auth || !auth.authenticated || auth.role !== 'ADMIN') {
-        showAlert('Access restricted: Please login as Librarian/Admin to access this portal', 'error');
-        setTimeout(() => {
-            window.location.href = '/index.html';
-        }, 600);
+        openAdminLoginModal();
         return;
     }
 
-    document.getElementById('logged-user-name').textContent = auth.username || 'Librarian';
+    document.getElementById('logged-user-name').textContent = auth.username || 'librarian';
 
-    // 2. Initialize Tabs
-    setupTabs();
+    // 3. Initial Data Load
+    loadDashboardData();
+});
 
-    // 3. Setup Forms and Listeners
-    setupForms();
-
-    // 4. Initial Data Load
+function loadDashboardData() {
     loadDashboardStats();
     loadBooks();
     loadMembers();
     loadLoans();
-});
+}
+
+// --------------------------------------------------------------
+// Admin Login Modal Handlers
+// --------------------------------------------------------------
+function openAdminLoginModal() {
+    const modal = document.getElementById('admin-login-modal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeAdminLoginModal() {
+    const modal = document.getElementById('admin-login-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function goToHome() {
+    window.location.href = 'index.html';
+}
+
+async function handleAdminAuthLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('admin-auth-btn');
+    const errBox = document.getElementById('librarian-auth-error');
+    errBox.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+
+    const payload = {
+        username: document.getElementById('admin-auth-username').value.trim(),
+        password: document.getElementById('admin-auth-password').value
+    };
+
+    try {
+        const res = await apiFetch(`${API_BASE}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const json = await parseJsonResponse(res);
+
+        if (res.ok && json.success) {
+            showAlert('Librarian login successful! Welcome to Admin Dashboard.', 'success');
+            closeAdminLoginModal();
+            document.getElementById('logged-user-name').textContent = json.data.username || 'librarian';
+            loadDashboardData();
+        } else {
+            errBox.textContent = json.message || 'Invalid username or password';
+            errBox.style.display = 'block';
+        }
+    } catch (err) {
+        errBox.textContent = 'Network error: ' + err.message;
+        errBox.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Login to Portal';
+    }
+}
 
 // --------------------------------------------------------------
 // Tabs Navigation
@@ -45,7 +100,8 @@ function setupTabs() {
 
             btn.classList.add('active');
             const target = btn.getAttribute('data-tab');
-            document.getElementById(`tab-${target}`).classList.add('active');
+            const tabContent = document.getElementById(`tab-${target}`);
+            if (tabContent) tabContent.classList.add('active');
 
             if (target === 'loans') {
                 populateIssueFormDropdowns();
@@ -58,21 +114,29 @@ function setupTabs() {
 // Setup Forms & Event Handlers
 // --------------------------------------------------------------
 function setupForms() {
+    // Admin Login Modal form
+    const authForm = document.getElementById('librarian-auth-form');
+    if (authForm) authForm.addEventListener('submit', handleAdminAuthLogin);
+
     // Add Book Form
-    document.getElementById('add-book-form').addEventListener('submit', handleAddBook);
+    const addBookForm = document.getElementById('add-book-form');
+    if (addBookForm) addBookForm.addEventListener('submit', handleAddBook);
 
     // Edit Book Form
-    document.getElementById('edit-book-form').addEventListener('submit', handleUpdateBook);
+    const editBookForm = document.getElementById('edit-book-form');
+    if (editBookForm) editBookForm.addEventListener('submit', handleUpdateBook);
 
     // Add Member Form
-    document.getElementById('add-member-form').addEventListener('submit', handleAddMember);
+    const addMemberForm = document.getElementById('add-member-form');
+    if (addMemberForm) addMemberForm.addEventListener('submit', handleAddMember);
 
     // Issue Book Form
-    document.getElementById('issue-book-form').addEventListener('submit', handleIssueBook);
+    const issueForm = document.getElementById('issue-book-form');
+    if (issueForm) issueForm.addEventListener('submit', handleIssueBook);
 
     // Loan Filter Buttons
     document.querySelectorAll('.loan-filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', () => {
             document.querySelectorAll('.loan-filter-btn').forEach(b => b.classList.replace('btn-primary', 'btn-outline'));
             btn.classList.replace('btn-outline', 'btn-primary');
             activeLoanFilter = btn.getAttribute('data-filter');
@@ -86,8 +150,31 @@ function setupForms() {
     dueDate.setDate(dueDate.getDate() + 14);
     const dueDateStr = dueDate.toISOString().split('T')[0];
 
-    document.getElementById('issue-date').value = todayStr;
-    document.getElementById('due-date').value = dueDateStr;
+    const issueDateInput = document.getElementById('issue-date');
+    const dueDateInput = document.getElementById('due-date');
+    if (issueDateInput) issueDateInput.value = todayStr;
+    if (dueDateInput) dueDateInput.value = dueDateStr;
+
+    // Backdrop click & Escape key listeners
+    const editModal = document.getElementById('edit-book-modal');
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
+    }
+
+    const authModal = document.getElementById('admin-login-modal');
+    if (authModal) {
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) goToHome();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeEditModal();
+        }
+    });
 }
 
 // --------------------------------------------------------------
@@ -95,7 +182,7 @@ function setupForms() {
 // --------------------------------------------------------------
 async function loadDashboardStats() {
     try {
-        const res = await fetch(`${API_BASE}/api/loans/stats`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/loans/stats`);
         const json = await parseJsonResponse(res);
         if (json.success && json.data) {
             document.getElementById('stat-total-books').textContent = json.data.totalBooks;
@@ -113,7 +200,7 @@ async function loadDashboardStats() {
 // --------------------------------------------------------------
 async function loadBooks() {
     try {
-        const res = await fetch(`${API_BASE}/api/books`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/books`);
         const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentBooks = json.data;
@@ -127,6 +214,8 @@ async function loadBooks() {
 
 function renderBooksTable() {
     const tbody = document.getElementById('librarian-books-tbody');
+    if (!tbody) return;
+
     if (currentBooks.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-muted);">No books found in database. Add your first book above.</td></tr>`;
         return;
@@ -172,10 +261,9 @@ async function handleAddBook(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/books`, {
+        const res = await apiFetch(`${API_BASE}/api/books`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
@@ -229,10 +317,9 @@ async function handleUpdateBook(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/books/${id}`, {
+        const res = await apiFetch(`${API_BASE}/api/books/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
@@ -261,7 +348,7 @@ async function deleteBook(id) {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/api/books/${id}`, { method: 'DELETE', credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/books/${id}`, { method: 'DELETE' });
         const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert('Book deleted successfully', 'success');
@@ -280,7 +367,7 @@ async function deleteBook(id) {
 // --------------------------------------------------------------
 async function loadMembers() {
     try {
-        const res = await fetch(`${API_BASE}/api/members`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/members`);
         const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentMembers = json.data;
@@ -294,6 +381,8 @@ async function loadMembers() {
 
 function renderMembersTable() {
     const tbody = document.getElementById('librarian-members-tbody');
+    if (!tbody) return;
+
     if (currentMembers.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-muted);">No members registered yet. Register a member above.</td></tr>`;
         return;
@@ -323,10 +412,9 @@ async function handleAddMember(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/members`, {
+        const res = await apiFetch(`${API_BASE}/api/members`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
@@ -385,7 +473,7 @@ function populateIssueFormDropdowns() {
 
 async function loadLoans() {
     try {
-        const res = await fetch(`${API_BASE}/api/loans`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/loans`);
         const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentLoans = json.data;
@@ -398,6 +486,8 @@ async function loadLoans() {
 
 function renderLoansTable() {
     const tbody = document.getElementById('librarian-loans-tbody');
+    if (!tbody) return;
+
     let filtered = currentLoans;
 
     if (activeLoanFilter === 'ISSUED') {
@@ -411,7 +501,7 @@ function renderLoansTable() {
         return;
     }
 
-    tbody.innerHTML = filtered.map((loan, idx) => {
+    tbody.innerHTML = filtered.map((loan) => {
         const isIssued = loan.status === 'ISSUED';
         const badgeClass = isIssued ? 'badge-issued' : 'badge-returned';
         const actionBtn = isIssued
@@ -421,8 +511,8 @@ function renderLoansTable() {
         return `
             <tr>
                 <td>${loan.id}</td>
-                <td style="font-weight: 600; color: var(--primary);">${escapeHtml(loan.book.title)}</td>
-                <td>${escapeHtml(loan.member.name)}</td>
+                <td style="font-weight: 600; color: var(--primary);">${escapeHtml(loan.book ? loan.book.title : '-')}</td>
+                <td>${escapeHtml(loan.member ? loan.member.name : '-')}</td>
                 <td>${formatDate(loan.issueDate)}</td>
                 <td style="font-weight: 600;">${formatDate(loan.dueDate)}</td>
                 <td>${formatDate(loan.returnDate)}</td>
@@ -471,10 +561,9 @@ async function handleIssueBook(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/loans/issue`, {
+        const res = await apiFetch(`${API_BASE}/api/loans/issue`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
@@ -506,9 +595,8 @@ async function returnBook(loanId) {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/api/loans/${loanId}/return`, {
-            method: 'PUT',
-            credentials: 'include'
+        const res = await apiFetch(`${API_BASE}/api/loans/${loanId}/return`, {
+            method: 'PUT'
         });
 
         const json = await parseJsonResponse(res);
@@ -524,17 +612,3 @@ async function returnBook(loanId) {
         showAlert('Network error: ' + err.message, 'error');
     }
 }
-
-// Setup Backdrop click and ESC key dismiss for edit modal
-document.addEventListener('DOMContentLoaded', () => {
-    const editModal = document.getElementById('edit-book-modal');
-    if (editModal) {
-        editModal.addEventListener('click', (e) => {
-            if (e.target === editModal) closeEditModal();
-        });
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeEditModal();
-    });
-});

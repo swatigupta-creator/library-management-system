@@ -282,7 +282,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3>✏️ Edit Book Details</h3>
-                <button type="button" onclick="closeEditModal()" style="background: none; border: none; font-size: 1.3rem; cursor: pointer;">&times;</button>
+                <button type="button" class="modal-close-btn" onclick="closeEditModal()">&times;</button>
             </div>
             <form id="edit-book-form">
                 <div class="modal-body">
@@ -311,6 +311,46 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
                     <button type="submit" id="update-book-btn" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal (shown if visiting librarian.html when unauthenticated) -->
+    <div id="admin-login-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="font-size: 1.4rem;">🛡️</span>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700;">Librarian Authentication</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Restricted to BBAU Library Administrators</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="goToHome()">&times;</button>
+            </div>
+            <form id="librarian-auth-form">
+                <div class="modal-body">
+                    <div id="librarian-auth-error" class="alert alert-error" style="display: none; margin-bottom: 1rem; font-size: 0.85rem;"></div>
+
+                    <div class="form-group">
+                        <label for="admin-auth-username">Username *</label>
+                        <input type="text" id="admin-auth-username" class="form-control" placeholder="librarian" value="librarian" required autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-auth-password">Password *</label>
+                        <input type="password" id="admin-auth-password" class="form-control" placeholder="••••••••" value="admin123" required autocomplete="current-password">
+                    </div>
+
+                    <div style="padding: 0.75rem 1rem; background: var(--primary-light); border-radius: var(--radius-sm); border: 1px solid #bfdbfe; font-size: 0.82rem; color: #1e40af; margin-top: 0.5rem;">
+                        <strong>🔑 Default Credentials:</strong>
+                        <div style="margin-top: 0.2rem;">Username: <code>librarian</code> | Password: <code>admin123</code></div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <a href="index.html" class="btn btn-outline btn-sm">← Back to Home</a>
+                    <button type="submit" id="admin-auth-btn" class="btn btn-primary">Login to Portal</button>
                 </div>
             </form>
         </div>

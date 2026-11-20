@@ -8,6 +8,7 @@ import com.library.exception.LibraryException;
 import com.library.exception.ResourceNotFoundException;
 import com.library.repository.BookRepository;
 import com.library.repository.LoanRepository;
+import com.library.repository.WishlistRepository;
 import com.library.service.BookService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +30,15 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final LoanRepository loanRepository;
+    private final WishlistRepository wishlistRepository;
 
     // Constructor Injection (Best practice: final dependencies)
-    public BookServiceImpl(BookRepository bookRepository, LoanRepository loanRepository) {
+    public BookServiceImpl(BookRepository bookRepository,
+                           LoanRepository loanRepository,
+                           WishlistRepository wishlistRepository) {
         this.bookRepository = bookRepository;
         this.loanRepository = loanRepository;
+        this.wishlistRepository = wishlistRepository;
     }
 
     // Overloaded Method 1: Get all books
@@ -141,6 +146,12 @@ public class BookServiceImpl implements BookService {
                         "' because one or more copies are currently issued to members.");
             }
         }
+
+        // Delete wishlists associated with this book
+        wishlistRepository.deleteByBookId(book.getId());
+
+        // Delete historical returned loans associated with this book
+        loanRepository.deleteByBookId(book.getId());
 
         bookRepository.delete(book);
     }

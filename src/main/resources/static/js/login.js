@@ -5,13 +5,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // If already authenticated, redirect straight to librarian portal
     const auth = await checkAuthStatus();
-    if (auth && auth.authenticated) {
-        window.location.href = '/librarian.html';
+    if (auth && auth.authenticated && auth.role === 'ADMIN') {
+        window.location.href = 'librarian.html';
         return;
     }
 
     const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', handleLogin);
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
 });
 
 async function handleLogin(e) {
@@ -24,20 +24,16 @@ async function handleLogin(e) {
 
     // Reset error states
     errorBox.style.display = 'none';
-    usernameInput.classList.remove('is-invalid');
-    passwordInput.classList.remove('is-invalid');
 
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
 
     if (!username) {
-        usernameInput.classList.add('is-invalid');
         usernameInput.focus();
         return;
     }
 
     if (!password) {
-        passwordInput.classList.add('is-invalid');
         passwordInput.focus();
         return;
     }
@@ -46,21 +42,19 @@ async function handleLogin(e) {
     submitBtn.textContent = 'Logging in...';
 
     try {
-        const res = await fetch('/api/auth/login', {
+        const res = await apiFetch(`${API_BASE}/api/auth/login`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
-            showAlert('Login successful! Redirecting...', 'success');
+            showAlert('Login successful! Redirecting to Librarian Portal...', 'success');
             setTimeout(() => {
-                window.location.href = '/librarian.html';
-            }, 600);
+                window.location.href = 'librarian.html';
+            }, 500);
         } else {
             errorBox.textContent = json.message || 'Invalid username or password';
             errorBox.style.display = 'block';
@@ -69,7 +63,7 @@ async function handleLogin(e) {
         }
     } catch (err) {
         console.error('Login error', err);
-        errorBox.textContent = 'Could not connect to backend server. Make sure Spring Boot is running.';
+        errorBox.textContent = 'Could not connect to backend server: ' + err.message;
         errorBox.style.display = 'block';
         submitBtn.disabled = false;
         submitBtn.textContent = 'Login to Dashboard';
