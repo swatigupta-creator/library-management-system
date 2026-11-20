@@ -1,23 +1,21 @@
 package com.library.repository;
 
 import com.library.entity.Loan;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface LoanRepository extends MongoRepository<Loan, String> {
+public interface LoanRepository extends JpaRepository<Loan, Long> {
 
-    List<Loan> findAllByOrderByCreatedAtDesc();
+    List<Loan> findAllByOrderByIssueDateDesc();
 
-    List<Loan> findByStatusOrderByCreatedAtDesc(String status);
+    List<Loan> findByStatusOrderByIssueDateDesc(String status);
 
-    List<Loan> findByBookId(String bookId);
-
-    List<Loan> findByMemberId(String memberId);
-
-    boolean existsByBookIdAndStatus(String bookId, String status);
+    List<Loan> findByMemberIdOrderByIssueDateDesc(Long memberId);
 
     long countByStatus(String status);
+
+    long countByMemberIdAndStatus(Long memberId, String status);
 }

@@ -20,7 +20,7 @@ function showAlert(message, type = 'info') {
     alert.className = `alert alert-${type}`;
     alert.innerHTML = `
         <span>${escapeHtml(message)}</span>
-        <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:inherit;" onclick="this.parentElement.remove()">×</button>
+        <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:inherit; margin-left:10px;" onclick="this.parentElement.remove()">×</button>
     `;
 
     container.appendChild(alert);
@@ -33,21 +33,63 @@ function showAlert(message, type = 'info') {
 }
 
 /**
- * Check currently logged in authentication status
+ * Check currently logged in authentication status & role
+ * @returns {Promise<{authenticated: boolean, role: 'ADMIN'|'STUDENT'|null, name: string, username: string, email: string, memberId: number}>}
  */
 async function checkAuthStatus() {
     try {
         const res = await fetch('/api/auth/status');
-        const data = await res.json();
-        return data.data; // { authenticated: boolean, username: string }
+        const json = await res.json();
+        if (json.success && json.data) {
+            return json.data;
+        }
+        return { authenticated: false, role: null };
     } catch (e) {
         console.error('Failed to check auth status', e);
-        return { authenticated: false, username: null };
+        return { authenticated: false, role: null };
     }
 }
 
 /**
- * Log out librarian
+ * Updates navbar based on user session role
+ */
+function updateNavbar(auth) {
+    const navAuthItem = document.getElementById('nav-auth-item');
+    if (!navAuthItem) return;
+
+    if (!auth || !auth.authenticated) {
+        navAuthItem.innerHTML = `
+            <button onclick="openRoleModal()" class="nav-btn btn btn-primary" style="padding: 0.45rem 1rem;">
+                🔑 Login / Register
+            </button>
+        `;
+        return;
+    }
+
+    if (auth.role === 'ADMIN') {
+        navAuthItem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                    🛡️ <strong style="color: var(--primary);">Librarian (Admin)</strong>
+                </span>
+                <a href="/librarian.html" class="btn btn-primary btn-sm">Admin Dashboard</a>
+                <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
+            </div>
+        `;
+    } else if (auth.role === 'STUDENT') {
+        navAuthItem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                    🎓 <strong style="color: var(--primary);">${escapeHtml(auth.name || 'Student')}</strong>
+                </span>
+                <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Log out user (Admin or Student)
  */
 async function logout() {
     try {
@@ -56,7 +98,7 @@ async function logout() {
         showAlert('Logged out successfully', 'success');
         setTimeout(() => {
             window.location.href = '/index.html';
-        }, 500);
+        }, 400);
     } catch (e) {
         showAlert('Logout failed: ' + e.message, 'error');
     }

@@ -32,3 +32,8 @@ target/
 
 ### Log files ###
 *.log
+
+### Local Database Files ###
+data/
+*.mv.db
+*.trace.db

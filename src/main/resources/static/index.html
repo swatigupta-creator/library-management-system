@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System - Home</title>
+    <title>BBAU Lucknow - Gautam Buddha Central Library</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-    <!-- Navigation Bar -->
+    <!-- Navigation Bar with BBAU University Logo -->
     <header class="navbar">
         <div class="nav-container">
             <a href="/index.html" class="logo">
-                <span class="logo-icon">📚</span>
-                <span>Library Management System</span>
+                <img src="/images/bbau-logo.png" alt="BBAU Logo" class="bbau-logo-img">
+                <div class="logo-text-group">
+                    <span class="logo-main-title">BBAU Lucknow</span>
+                    <span class="logo-sub-title">Gautam Buddha Central Library</span>
+                </div>
             </a>
             <nav>
                 <ul class="nav-links">
                     <li><a href="/index.html" class="active">Home</a></li>
                     <li><a href="/books.html">Browse Books</a></li>
                     <li id="nav-auth-item">
-                        <a href="/login.html" class="nav-btn">Librarian Login</a>
+                        <button onclick="openRoleModal()" class="btn btn-primary btn-sm">🔑 Login / Register</button>
                     </li>
                 </ul>
             </nav>
@@ -30,18 +33,131 @@
     <!-- Main Content -->
     <main class="main-content">
 
-        <!-- Hero Section -->
-        <section class="hero">
-            <h1>Simple &amp; Realistic Library System</h1>
-            <p>Explore our library collection, search books by title or author, and track book availability in real-time. Librarians can manage records, issue books to members, and process returns seamlessly.</p>
-            <div class="hero-actions">
-                <a href="/books.html" class="btn btn-accent">🔍 Explore Books Catalog</a>
-                <a href="/librarian.html" id="hero-librarian-btn" class="btn btn-primary" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4);">Librarian Portal</a>
+        <!-- Personalized Hero Section with BBAU Central Library Background -->
+        <section class="hero" id="hero-section">
+            <div style="margin-bottom: 0.35rem;">
+                <span style="background: rgba(255,255,255,0.18); color: #fff; padding: 0.35rem 0.85rem; font-size: 0.82rem; font-weight: 600; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px);">
+                    🏛️ Babasaheb Bhimrao Ambedkar University &bull; NAAC 'A++' Central University
+                </span>
+            </div>
+
+            <!-- Guest Welcome -->
+            <div id="hero-guest-msg">
+                <h1 style="font-size: 2.2rem; margin-top: 0.4rem;">Gautam Buddha Central Library</h1>
+                <p>Welcome to BBAU Central Library! Select whether you are a <strong>Student</strong> or <strong>Librarian / Admin</strong> to browse our database catalog, view real-time book availability, or borrow books.</p>
+                <div class="hero-actions">
+                    <button onclick="openRoleModal()" class="btn btn-accent">🚀 Get Started / Login</button>
+                    <a href="#catalog-section" class="btn btn-primary" style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4);">📚 View Books Catalog</a>
+                </div>
+            </div>
+
+            <!-- Logged In Welcome -->
+            <div id="hero-logged-msg" style="display: none;">
+                <h1 id="hero-welcome-title" style="font-size: 2.2rem; margin-top: 0.4rem;">Welcome!</h1>
+                <p id="hero-welcome-desc">Explore the BBAU library collection, search books by title or author, borrow books, and track book availability in real-time.</p>
+                <div class="hero-actions" id="hero-user-actions">
+                    <a href="#catalog-section" class="btn btn-accent">🔍 Explore Books Catalog</a>
+                    <span id="hero-role-specific-btn"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Student Personal Section: My Borrowed Books (Visible only when logged in as Student) -->
+        <section id="student-loans-section" style="display: none; margin-bottom: 2rem;">
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h2>📖 My Borrowed Books</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Track your currently borrowed books and due dates. Return books anytime with one click.</p>
+                    </div>
+                    <span id="student-loans-count" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Loading...</span>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th style="width: 130px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-loans-tbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading your loans...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Books Catalog & Search (Visible to Everyone directly on Home Page!) -->
+        <section id="catalog-section" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">📚 BBAU Library Books Catalog</h2>
+                    <p style="color: var(--text-muted); font-size: 0.92rem;">Real-time database catalog. Check available copies or borrow books instantly.</p>
+                </div>
+                <div id="admin-home-actions" style="display: none;">
+                    <a href="/librarian.html" class="btn btn-primary btn-sm">⚙️ Librarian Admin Dashboard</a>
+                </div>
+            </div>
+
+            <!-- Search & Filter Controls -->
+            <div class="search-container" style="margin-bottom: 1rem;">
+                <div class="search-input-group">
+                    <input type="text" id="home-search-input" placeholder="🔍 Search books by title, author, category, or ISBN...">
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <label for="home-status-filter" style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">Availability:</label>
+                    <select id="home-status-filter" class="form-control" style="width: auto; padding: 0.55rem 0.8rem;">
+                        <option value="ALL">All Books</option>
+                        <option value="AVAILABLE">Available Only</option>
+                        <option value="OUT_OF_STOCK">All Copies Issued (Out of Stock)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Books Table Card -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700;">Books Inventory</h3>
+                        <span id="home-books-count" style="font-size: 0.88rem; color: var(--text-muted); font-weight: 500;">Loading...</span>
+                    </div>
+                    <a href="/books.html" class="btn btn-outline btn-sm">Open Full Catalog Page ↗</a>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 45px;">#</th>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>ISBN</th>
+                                <th>Available Copies</th>
+                                <th>Status</th>
+                                <th style="width: 140px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="home-books-tbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading books from database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <!-- Live Statistics Counter -->
-        <section>
+        <section style="margin-bottom: 2rem;">
             <h2 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--text-main);">📊 Library Overview</h2>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -75,22 +191,46 @@
             </div>
         </section>
 
+        <!-- BBAU Campus Library Showcase with Genuine Building Photo -->
+        <section style="margin-bottom: 2rem;">
+            <div class="table-card" style="padding: 0; overflow: hidden;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: center;">
+                    <div style="height: 100%; min-height: 280px; max-height: 380px; overflow: hidden; background: #0f172a;">
+                        <img src="/images/bbau-library.jpg" alt="Gautam Buddha Central Library BBAU" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    </div>
+                    <div style="padding: 2.25rem;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">University Infrastructure</div>
+                        <h2 style="font-size: 1.5rem; color: var(--text-main); margin-bottom: 0.75rem;">Gautam Buddha Central Library</h2>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem;">
+                            Babasaheb Bhimrao Ambedkar University's central library serves students, research scholars, and faculty with comprehensive print collections, digital repositories, air-conditioned reading halls, and automated circulation services.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.88rem; color: var(--text-main);">
+                            <div>📍 <strong>Location:</strong> Vidya Vihar, Lucknow</div>
+                            <div>🕒 <strong>Hours:</strong> 8:00 AM – 10:00 PM</div>
+                            <div>📚 <strong>Collection:</strong> 50,000+ Volumes</div>
+                            <div>🌐 <strong>Facilities:</strong> Wi-Fi &amp; E-Resource Lab</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Features Overview -->
-        <section style="margin-top: 1.5rem;">
+        <section style="margin-bottom: 1.5rem;">
             <div class="table-card" style="padding: 2rem;">
                 <h2 style="margin-bottom: 1.25rem;">Key System Highlights</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                     <div>
-                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🔍 Real-time Search</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">Filter books instantly by Title or Author directly connected to MySQL database.</p>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🎓 Student Portal</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Students can create an account, log in, browse the database catalog, borrow available books, and track their borrowed books and due dates.</p>
                     </div>
                     <div>
-                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">📦 Dynamic Inventory</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">When a book is issued, available count decreases. When returned, available count increases automatically.</p>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🛡️ Librarian Administration</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Librarians can add, edit, and delete books, register members, issue books, and process returns with automatic inventory restoration.</p>
                     </div>
                     <div>
-                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🔒 Librarian Control</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">Secure librarian session to add/edit/delete books, register members, and manage loan due dates.</p>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">⚡ Real-time Availability</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">When a book is borrowed or issued, available copy count decreases. When returned, available count increments immediately.</p>
                     </div>
                 </div>
             </div>
@@ -98,27 +238,653 @@
 
     </main>
 
-    <!-- Footer -->
+    <!-- ======================================================= -->
+    <!-- ROLE SELECTION & LOGIN GATEWAY MODAL                    -->
+    <!-- ======================================================= -->
+    <div id="role-auth-modal" class="auth-gate-overlay">
+        <div class="auth-gate-box">
+            <!-- Close (X) button at top-right -->
+            <button type="button" class="modal-close-btn" onclick="closeRoleModal()" title="Close">&times;</button>
+
+            <!-- STEP 1: CHOOSE ROLE (Student vs Admin) -->
+            <div id="view-role-select" style="padding: 2rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <img src="/images/bbau-logo.png" alt="BBAU Logo" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                    <h2 style="font-size: 1.35rem; color: var(--text-main); font-weight: 800;">Babasaheb Bhimrao Ambedkar University</h2>
+                    <div style="font-size: 0.92rem; font-weight: 600; color: var(--accent);">Gautam Buddha Central Library</div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem;">Please select whether you are a <strong>Student</strong> or <strong>Librarian / Admin</strong> to continue:</p>
+                </div>
+
+                <div class="role-selector-grid">
+                    <!-- Student Card -->
+                    <div class="role-choice-card">
+                        <div>
+                            <div class="role-badge-icon">🎓</div>
+                            <h3 style="color: var(--accent); margin-bottom: 0.5rem; font-size: 1.25rem;">Student</h3>
+                            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">Browse books catalog, search titles/authors, check availability, borrow books, and track due dates.</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <button onclick="showAuthView('student-login')" class="btn btn-primary" style="width: 100%;">Student Login</button>
+                            <button onclick="showAuthView('student-register')" class="btn btn-outline" style="width: 100%;">New Student? Create Account</button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Card -->
+                    <div class="role-choice-card admin-card">
+                        <div>
+                            <div class="role-badge-icon">🛡️</div>
+                            <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Librarian / Admin</h3>
+                            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">Manage books catalog, add/edit/delete records, register members, and handle book issues &amp; returns.</p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <button onclick="showAuthView('admin-login')" class="btn btn-accent" style="width: 100%;">Librarian Login</button>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.4rem;">Restricted to library staff</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 1.75rem;">
+                    <button onclick="closeRoleModal()" class="btn btn-outline btn-sm" style="color: var(--text-muted); border-color: var(--border);">Continue as Guest Viewer</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: STUDENT LOGIN FORM -->
+            <div id="view-student-login" style="padding: 2.25rem; display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-right: 2rem;">
+                    <button onclick="showAuthView('role-select')" class="btn btn-outline btn-sm">← Back to Roles</button>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent);">🎓 BBAU Student Portal</span>
+                </div>
+                <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.35rem;">Student Login</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Enter your registered student email and password.</p>
+
+                <div id="student-login-error" class="alert alert-error" style="display: none; margin-bottom: 1rem;"></div>
+
+                <form id="student-login-form">
+                    <div class="form-group">
+                        <label for="student-login-email">Student Email *</label>
+                        <input type="email" id="student-login-email" class="form-control" placeholder="e.g. aarav.sharma@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-login-password">Password *</label>
+                        <input type="password" id="student-login-password" class="form-control" placeholder="Enter password" required>
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="student-login-btn" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Login as Student</button>
+                    </div>
+                </form>
+
+                <div style="margin-top: 1.25rem; text-align: center; font-size: 0.88rem; color: var(--text-muted);">
+                    New student? <a href="javascript:void(0)" onclick="showAuthView('student-register')" style="color: var(--accent); font-weight: 600;">Create an account</a>
+                </div>
+
+                <div style="margin-top: 1.25rem; padding: 0.75rem; background: var(--primary-light); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--primary);">
+                    💡 <strong>Sample Student Login:</strong> Email: <code>aarav.sharma@example.com</code> | Password: <code>student123</code>
+                </div>
+            </div>
+
+            <!-- STEP 3: NEW STUDENT REGISTRATION (CREATE ACCOUNT) -->
+            <div id="view-student-register" style="padding: 2.25rem; display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-right: 2rem;">
+                    <button onclick="showAuthView('role-select')" class="btn btn-outline btn-sm">← Back to Roles</button>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent);">🎓 New Registration</span>
+                </div>
+                <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.35rem;">Create Student Account</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Fill in your details to register as a new BBAU library member.</p>
+
+                <div id="student-register-error" class="alert alert-error" style="display: none; margin-bottom: 1rem;"></div>
+
+                <form id="student-register-form">
+                    <div class="form-group">
+                        <label for="reg-name">Full Name *</label>
+                        <input type="text" id="reg-name" class="form-control" placeholder="e.g. Rohit Kumar" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address *</label>
+                        <input type="email" id="reg-email" class="form-control" placeholder="e.g. rohit.kumar@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-phone">Phone Number *</label>
+                        <input type="tel" id="reg-phone" class="form-control" placeholder="e.g. 9876543210" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Create Password *</label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="At least 4 characters" minlength="4" required>
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="student-reg-btn" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Create Account &amp; Login</button>
+                    </div>
+                </form>
+
+                <div style="margin-top: 1.25rem; text-align: center; font-size: 0.88rem; color: var(--text-muted);">
+                    Already registered? <a href="javascript:void(0)" onclick="showAuthView('student-login')" style="color: var(--accent); font-weight: 600;">Student Login</a>
+                </div>
+            </div>
+
+            <!-- STEP 4: ADMIN (LIBRARIAN) LOGIN FORM -->
+            <div id="view-admin-login" style="padding: 2.25rem; display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-right: 2rem;">
+                    <button onclick="showAuthView('role-select')" class="btn btn-outline btn-sm">← Back to Roles</button>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">🛡️ Librarian Login</span>
+                </div>
+                <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.35rem;">BBAU Librarian Admin Login</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Sign in with your librarian administrative credentials.</p>
+
+                <div id="admin-login-error" class="alert alert-error" style="display: none; margin-bottom: 1rem;"></div>
+
+                <form id="admin-login-form">
+                    <div class="form-group">
+                        <label for="admin-username">Username *</label>
+                        <input type="text" id="admin-username" class="form-control" placeholder="e.g. librarian" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Password *</label>
+                        <input type="password" id="admin-password" class="form-control" placeholder="Enter librarian password" required>
+                    </div>
+                    <div style="margin-top: 1.25rem;">
+                        <button type="submit" id="admin-login-btn" class="btn btn-accent" style="width: 100%; padding: 0.75rem;">Login as Librarian</button>
+                    </div>
+                </form>
+
+                <div style="margin-top: 1.25rem; padding: 0.75rem; background: var(--primary-light); border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--primary);">
+                    💡 <strong>Default Admin Credentials:</strong> Username: <code>librarian</code> | Password: <code>admin123</code>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer with BBAU University Details -->
     <footer>
-        <p>Library Management System &copy; 2026. Built with Spring Boot, MySQL &amp; Vanilla JavaScript.</p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.65rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+            <img src="/images/bbau-logo.png" alt="BBAU" style="height: 28px; width: auto; object-fit: contain;">
+            <strong style="color: var(--text-main);">Babasaheb Bhimrao Ambedkar University (A Central University), Lucknow</strong>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Gautam Buddha Central Library &copy; 2026. Vidya Vihar, Raebareli Road, Lucknow, Uttar Pradesh - 226025.</p>
     </footer>
 
     <script src="/js/common.js"></script>
     <script>
+        let currentAuth = null;
+        let homeBooks = [];
+        let studentLoansList = [];
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check auth status to adjust navigation
-            const auth = await checkAuthStatus();
-            const navAuthItem = document.getElementById('nav-auth-item');
-            if (auth && auth.authenticated) {
-                navAuthItem.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <a href="/librarian.html" class="nav-btn">Librarian Dashboard</a>
-                        <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
-                    </div>
-                `;
+            // 1. Check user authentication
+            currentAuth = await checkAuthStatus();
+            updateNavbar(currentAuth);
+
+            if (!currentAuth || !currentAuth.authenticated) {
+                // Not logged in: Show the Role Selection Gateway immediately
+                openRoleModal();
+                setupGuestHero();
+            } else {
+                // Logged in: render personalized dashboard
+                setupUserHero(currentAuth);
+                if (currentAuth.role === 'STUDENT') {
+                    await loadStudentLoans();
+                }
             }
 
-            // Load real-time stats from backend
+            // 2. Load books catalog on home page
+            await loadHomeBooks();
+
+            // 3. Load live library statistics
+            loadStats();
+
+            // 4. Setup search and filter listeners
+            setupHomeCatalogListeners();
+
+            // 5. Wire form submit listeners
+            document.getElementById('student-login-form').addEventListener('submit', handleStudentLogin);
+            document.getElementById('student-register-form').addEventListener('submit', handleStudentRegister);
+            document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+
+            // 6. Backdrop click & Escape key to close modal
+            const roleModal = document.getElementById('role-auth-modal');
+            roleModal.addEventListener('click', (e) => {
+                if (e.target === roleModal) {
+                    closeRoleModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeRoleModal();
+                }
+            });
+        });
+
+        // -------------------------------------------------------------
+        // Gateway Modal Navigation
+        // -------------------------------------------------------------
+        function openRoleModal() {
+            showAuthView('role-select');
+            document.getElementById('role-auth-modal').classList.add('active');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('role-auth-modal').classList.remove('active');
+        }
+
+        function showAuthView(viewName) {
+            document.getElementById('view-role-select').style.display = 'none';
+            document.getElementById('view-student-login').style.display = 'none';
+            document.getElementById('view-student-register').style.display = 'none';
+            document.getElementById('view-admin-login').style.display = 'none';
+
+            // Clear any error alerts
+            document.getElementById('student-login-error').style.display = 'none';
+            document.getElementById('student-register-error').style.display = 'none';
+            document.getElementById('admin-login-error').style.display = 'none';
+
+            if (viewName === 'role-select') {
+                document.getElementById('view-role-select').style.display = 'block';
+            } else if (viewName === 'student-login') {
+                document.getElementById('view-student-login').style.display = 'block';
+                document.getElementById('student-login-email').focus();
+            } else if (viewName === 'student-register') {
+                document.getElementById('view-student-register').style.display = 'block';
+                document.getElementById('reg-name').focus();
+            } else if (viewName === 'admin-login') {
+                document.getElementById('view-admin-login').style.display = 'block';
+                document.getElementById('admin-username').focus();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 1. Student Login Handler
+        // -------------------------------------------------------------
+        async function handleStudentLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('student-login-btn');
+            const errBox = document.getElementById('student-login-error');
+            errBox.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            const payload = {
+                email: document.getElementById('student-login-email').value.trim(),
+                password: document.getElementById('student-login-password').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/student/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    showAlert(json.message || 'Login successful! Welcome to Student Portal.', 'success');
+                    closeRoleModal();
+                    currentAuth = json.data;
+                    updateNavbar(currentAuth);
+                    setupUserHero(currentAuth);
+                    await loadStudentLoans();
+                    await loadHomeBooks();
+                    loadStats();
+                } else {
+                    errBox.textContent = json.message || 'Failed to login';
+                    errBox.style.display = 'block';
+                }
+            } catch (err) {
+                errBox.textContent = 'Network error: ' + err.message;
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login as Student';
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 2. Student Registration Handler
+        // -------------------------------------------------------------
+        async function handleStudentRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('student-reg-btn');
+            const errBox = document.getElementById('student-register-error');
+            errBox.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            const payload = {
+                name: document.getElementById('reg-name').value.trim(),
+                email: document.getElementById('reg-email').value.trim(),
+                phone: document.getElementById('reg-phone').value.trim(),
+                password: document.getElementById('reg-password').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/student/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    showAlert('Account created successfully! Welcome, ' + payload.name + '!', 'success');
+                    closeRoleModal();
+                    currentAuth = json.data;
+                    updateNavbar(currentAuth);
+                    setupUserHero(currentAuth);
+                    await loadStudentLoans();
+                    await loadHomeBooks();
+                    loadStats();
+                } else {
+                    errBox.textContent = json.message || 'Failed to create account';
+                    errBox.style.display = 'block';
+                }
+            } catch (err) {
+                errBox.textContent = 'Network error: ' + err.message;
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Account & Login';
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. Admin Login Handler
+        // -------------------------------------------------------------
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('admin-login-btn');
+            const errBox = document.getElementById('admin-login-error');
+            errBox.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            const payload = {
+                username: document.getElementById('admin-username').value.trim(),
+                password: document.getElementById('admin-password').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    showAlert('Admin login successful! Redirecting to Librarian Portal...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/librarian.html';
+                    }, 500);
+                } else {
+                    errBox.textContent = json.message || 'Invalid username or password';
+                    errBox.style.display = 'block';
+                }
+            } catch (err) {
+                errBox.textContent = 'Network error: ' + err.message;
+                errBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login as Librarian';
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Hero Section & Student Dashboard UI Setup
+        // -------------------------------------------------------------
+        function setupGuestHero() {
+            document.getElementById('hero-guest-msg').style.display = 'block';
+            document.getElementById('hero-logged-msg').style.display = 'none';
+            document.getElementById('student-loans-section').style.display = 'none';
+            document.getElementById('admin-home-actions').style.display = 'none';
+        }
+
+        function setupUserHero(auth) {
+            document.getElementById('hero-guest-msg').style.display = 'none';
+            document.getElementById('hero-logged-msg').style.display = 'block';
+
+            const title = document.getElementById('hero-welcome-title');
+            const desc = document.getElementById('hero-welcome-desc');
+            const roleBtn = document.getElementById('hero-role-specific-btn');
+            const adminActions = document.getElementById('admin-home-actions');
+
+            if (auth.role === 'ADMIN') {
+                title.textContent = 'Welcome, BBAU Librarian Administrator!';
+                desc.textContent = 'You have administrative control to manage books inventory, members, book issues, and returns.';
+                roleBtn.innerHTML = `<a href="/librarian.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">⚙️ Go to Librarian Dashboard</a>`;
+                document.getElementById('student-loans-section').style.display = 'none';
+                if (adminActions) adminActions.style.display = 'block';
+            } else if (auth.role === 'STUDENT') {
+                title.textContent = `Welcome, ${escapeHtml(auth.name)}! (BBAU Student)`;
+                desc.textContent = 'Search books in the catalog, check live availability, borrow books instantly, and track your active loans below.';
+                roleBtn.innerHTML = `<a href="#student-loans-section" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">📖 View My Borrowed Books</a>`;
+                document.getElementById('student-loans-section').style.display = 'block';
+                if (adminActions) adminActions.style.display = 'none';
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Load Student's Personal Loans
+        // -------------------------------------------------------------
+        async function loadStudentLoans() {
+            const tbody = document.getElementById('student-loans-tbody');
+            const countLabel = document.getElementById('student-loans-count');
+
+            try {
+                const res = await fetch('/api/loans/my-loans');
+                const json = await res.json();
+
+                if (res.ok && json.success && Array.isArray(json.data)) {
+                    studentLoansList = json.data;
+                    const activeCount = studentLoansList.filter(l => l.status === 'ISSUED').length;
+                    countLabel.textContent = `${studentLoansList.length} total (${activeCount} currently active)`;
+
+                    if (studentLoansList.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    You have not borrowed any books yet. Browse the catalog below and click <strong>"📥 Borrow Book"</strong> to borrow an available book!
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    tbody.innerHTML = studentLoansList.map((loan, idx) => {
+                        const isIssued = loan.status === 'ISSUED';
+                        const badgeClass = isIssued ? 'badge-issued' : 'badge-returned';
+                        const returnBtn = isIssued
+                            ? `<button class="btn btn-success btn-sm" onclick="handleStudentReturn(${loan.id})" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">↩️ Return Book</button>`
+                            : `<span style="color: var(--text-muted); font-size: 0.82rem;">Returned</span>`;
+
+                        return `
+                            <tr>
+                                <td>${idx + 1}</td>
+                                <td style="font-weight: 600; color: var(--primary);">${escapeHtml(loan.book ? loan.book.title : '-')}</td>
+                                <td>${escapeHtml(loan.book ? loan.book.author : '-')}</td>
+                                <td>${formatDate(loan.issueDate)}</td>
+                                <td style="font-weight: 600; color: ${isIssued ? 'var(--warning)' : 'inherit'};">${formatDate(loan.dueDate)}</td>
+                                <td>${formatDate(loan.returnDate)}</td>
+                                <td><span class="badge ${badgeClass}">${loan.status}</span></td>
+                                <td>${returnBtn}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load student loans', e);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Student Action: Return Book
+        // -------------------------------------------------------------
+        async function handleStudentReturn(loanId) {
+            const loan = studentLoansList.find(l => l.id === loanId);
+            const bookTitle = loan && loan.book ? loan.book.title : 'this book';
+
+            if (!confirm(`Are you sure you want to return "${bookTitle}"?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/loans/student/return/${loanId}`, { method: 'PUT' });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    showAlert(`Book '${bookTitle}' returned successfully! Copy restored to library.`, 'success');
+                    await loadStudentLoans();
+                    await loadHomeBooks();
+                    loadStats();
+                } else {
+                    showAlert(json.message || 'Failed to return book', 'error');
+                }
+            } catch (e) {
+                showAlert('Error returning book: ' + e.message, 'error');
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Student Action: Borrow Book
+        // -------------------------------------------------------------
+        async function handleStudentBorrow(bookId) {
+            if (!currentAuth || !currentAuth.authenticated) {
+                showAlert('Please login as a student to borrow books', 'info');
+                openRoleModal();
+                return;
+            }
+
+            if (currentAuth.role !== 'STUDENT') {
+                showAlert('Only registered students can borrow books via this action. Use Librarian Dashboard for administrative issuance.', 'info');
+                return;
+            }
+
+            const book = homeBooks.find(b => b.id === bookId);
+            const bookTitle = book ? book.title : 'this book';
+
+            if (!confirm(`Do you want to borrow "${bookTitle}" for 14 days?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/loans/student/borrow/${bookId}`, { method: 'POST' });
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    showAlert(`Book '${bookTitle}' borrowed successfully! Due in 14 days.`, 'success');
+                    await loadStudentLoans();
+                    await loadHomeBooks();
+                    loadStats();
+                } else {
+                    showAlert(json.message || 'Failed to borrow book', 'error');
+                }
+            } catch (e) {
+                showAlert('Error borrowing book: ' + e.message, 'error');
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Load Books Catalog on Home Page
+        // -------------------------------------------------------------
+        async function loadHomeBooks() {
+            try {
+                const res = await fetch('/api/books');
+                const json = await res.json();
+                if (json.success && Array.isArray(json.data)) {
+                    homeBooks = json.data;
+                    renderHomeBooks();
+                }
+            } catch (e) {
+                console.error('Failed to load books', e);
+            }
+        }
+
+        function setupHomeCatalogListeners() {
+            const searchInput = document.getElementById('home-search-input');
+            let timer;
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(renderHomeBooks, 180);
+                });
+            }
+
+            const filterSelect = document.getElementById('home-status-filter');
+            if (filterSelect) {
+                filterSelect.addEventListener('change', renderHomeBooks);
+            }
+        }
+
+        function renderHomeBooks() {
+            const tbody = document.getElementById('home-books-tbody');
+            const countLabel = document.getElementById('home-books-count');
+            const query = (document.getElementById('home-search-input').value || '').trim().toLowerCase();
+            const filterVal = (document.getElementById('home-status-filter').value || 'ALL');
+
+            const filtered = homeBooks.filter(book => {
+                const match = !query ||
+                    (book.title && book.title.toLowerCase().includes(query)) ||
+                    (book.author && book.author.toLowerCase().includes(query)) ||
+                    (book.category && book.category.toLowerCase().includes(query)) ||
+                    (book.isbn && book.isbn.toLowerCase().includes(query));
+
+                if (!match) return false;
+
+                if (filterVal === 'AVAILABLE') return book.availableCopies > 0;
+                if (filterVal === 'OUT_OF_STOCK') return book.availableCopies <= 0;
+                return true;
+            });
+
+            countLabel.textContent = `Showing ${filtered.length} of ${homeBooks.length} books`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No books found matching your search.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const isStudent = currentAuth && currentAuth.role === 'STUDENT';
+            const isAdmin = currentAuth && currentAuth.role === 'ADMIN';
+
+            tbody.innerHTML = filtered.map((b, idx) => {
+                const isAvailable = b.availableCopies > 0;
+                const badgeClass = isAvailable ? 'badge-available' : 'badge-unavailable';
+                const badgeText = isAvailable ? `Available (${b.availableCopies}/${b.totalCopies})` : `All Issued (0/${b.totalCopies})`;
+
+                let actionHtml = '';
+                if (isStudent) {
+                    if (isAvailable) {
+                        actionHtml = `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">📥 Borrow Book</button>`;
+                    } else {
+                        actionHtml = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; padding: 0.3rem 0.7rem; font-size: 0.8rem;">Out of Stock</button>`;
+                    }
+                } else if (isAdmin) {
+                    actionHtml = `<a href="/librarian.html" class="btn btn-outline btn-sm" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">Manage in Portal</a>`;
+                } else {
+                    actionHtml = `<button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">🔑 Login to Borrow</button>`;
+                }
+
+                return `
+                    <tr>
+                        <td style="color: var(--text-muted);">${idx + 1}</td>
+                        <td style="font-weight: 600; color: var(--primary);">${escapeHtml(b.title)}</td>
+                        <td>${escapeHtml(b.author)}</td>
+                        <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.82rem;">${escapeHtml(b.category)}</span></td>
+                        <td style="font-family: monospace; font-size: 0.88rem;">${escapeHtml(b.isbn)}</td>
+                        <td style="font-weight: 600;">${b.availableCopies} / ${b.totalCopies}</td>
+                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // -------------------------------------------------------------
+        // Live Library Stats
+        // -------------------------------------------------------------
+        async function loadStats() {
             try {
                 const res = await fetch('/api/loans/stats');
                 const result = await res.json();
@@ -132,7 +898,7 @@
             } catch (err) {
                 console.error('Failed to load stats', err);
             }
-        });
+        }
     </script>
 </body>
 </html>

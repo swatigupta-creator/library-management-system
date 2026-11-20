@@ -8,13 +8,13 @@ let currentLoans = [];
 let activeLoanFilter = 'ALL';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Enforce Authentication
+    // 1. Enforce Authentication (Librarian/Admin only)
     const auth = await checkAuthStatus();
-    if (!auth || !auth.authenticated) {
-        showAlert('Please login as librarian to access this portal', 'error');
+    if (!auth || !auth.authenticated || auth.role !== 'ADMIN') {
+        showAlert('Access restricted: Please login as Librarian/Admin to access this portal', 'error');
         setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 500);
+            window.location.href = '/index.html';
+        }, 600);
         return;
     }
 
@@ -148,8 +148,8 @@ function renderBooksTable() {
                 <td>${badge}</td>
                 <td>
                     <div style="display: flex; gap: 0.4rem;">
-                        <button class="btn btn-outline btn-sm" onclick="openEditModal('${b.id}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteBook('${b.id}', '${escapeHtml(b.title)}')">🗑️ Delete</button>
+                        <button class="btn btn-outline btn-sm" onclick="openEditModal(${b.id})">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBook(${b.id})">🗑️ Delete</button>
                     </div>
                 </td>
             </tr>
@@ -196,7 +196,7 @@ async function handleAddBook(e) {
 }
 
 function openEditModal(bookId) {
-    const book = currentBooks.find(b => b.id === bookId);
+    const book = currentBooks.find(b => b.id == bookId);
     if (!book) return;
 
     document.getElementById('edit-book-id').value = book.id;
@@ -250,7 +250,10 @@ async function handleUpdateBook(e) {
     }
 }
 
-async function deleteBook(id, title) {
+async function deleteBook(id) {
+    const b = currentBooks.find(x => x.id == id);
+    const title = b ? b.title : 'this book';
+
     if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
         return;
     }
@@ -409,7 +412,7 @@ function renderLoansTable() {
         const isIssued = loan.status === 'ISSUED';
         const badgeClass = isIssued ? 'badge-issued' : 'badge-returned';
         const actionBtn = isIssued
-            ? `<button class="btn btn-success btn-sm" onclick="returnBook('${loan.id}', '${escapeHtml(loan.book.title)}')">📥 Return Book</button>`
+            ? `<button class="btn btn-success btn-sm" onclick="returnBook(${loan.id})">📥 Return Book</button>`
             : `<span style="color: var(--text-muted); font-size: 0.85rem;">Returned</span>`;
 
         return `
@@ -490,7 +493,10 @@ async function handleIssueBook(e) {
     }
 }
 
-async function returnBook(loanId, bookTitle) {
+async function returnBook(loanId) {
+    const l = currentLoans.find(x => x.id == loanId);
+    const bookTitle = l && l.book ? l.book.title : 'this book';
+
     if (!confirm(`Confirm return of book "${bookTitle}"? This will mark the loan as returned and increment available copies.`)) {
         return;
     }
@@ -513,3 +519,17 @@ async function returnBook(loanId, bookTitle) {
         showAlert('Network error: ' + err.message, 'error');
     }
 }
+
+// Setup Backdrop click and ESC key dismiss for edit modal
+document.addEventListener('DOMContentLoaded', () => {
+    const editModal = document.getElementById('edit-book-modal');
+    if (editModal) {
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeEditModal();
+    });
+});

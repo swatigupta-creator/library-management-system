@@ -1,51 +1,90 @@
 package com.library.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
-@Document(collection = "books")
+@Entity
+@Table(name = "books")
 public class Book {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Column(nullable = false, length = 255)
     private String title;
 
+    @Column(nullable = false, length = 255)
     private String author;
 
-    @Indexed(unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String isbn;
 
+    @Column(length = 100)
     private String category;
 
-    private Integer totalCopies = 1;
+    @Column(nullable = false)
+    private Integer totalCopies;
 
-    private Integer availableCopies = 1;
+    @Column(nullable = false)
+    private Integer availableCopies;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     public Book() {
+        this.totalCopies = 1;
+        this.availableCopies = 1;
         this.createdAt = LocalDateTime.now();
     }
 
-    public Book(String title, String author, String isbn, String category, Integer totalCopies, Integer availableCopies) {
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.category = category;
-        this.totalCopies = totalCopies;
-        this.availableCopies = availableCopies;
+    public Book(String title, String author, String isbn) {
+        this.title = title != null ? title.trim() : "";
+        this.author = author != null ? author.trim() : "";
+        this.isbn = isbn != null ? isbn.trim() : "";
+        this.category = "General";
+        this.totalCopies = 1;
+        this.availableCopies = 1;
         this.createdAt = LocalDateTime.now();
     }
 
-    public String getId() {
+    public Book(String title, String author, String isbn, String category, int totalCopies) {
+        this.title = title != null ? title.trim() : "";
+        this.author = author != null ? author.trim() : "";
+        this.isbn = isbn != null ? isbn.trim() : "";
+        this.category = category != null ? category.trim() : "General";
+        this.totalCopies = Math.max(1, totalCopies);
+        this.availableCopies = this.totalCopies;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public boolean isAvailable() {
+        return this.availableCopies != null && this.availableCopies > 0;
+    }
+
+    public void decrementAvailableCopies() {
+        if (!isAvailable()) {
+            throw new IllegalStateException("Cannot issue book '" + this.title + "': No copies currently available");
+        }
+        this.availableCopies--;
+    }
+
+    public void incrementAvailableCopies() {
+        if (this.availableCopies != null && this.totalCopies != null && this.availableCopies < this.totalCopies) {
+            this.availableCopies++;
+        }
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -54,7 +93,7 @@ public class Book {
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.title = title != null ? title.trim() : null;
     }
 
     public String getAuthor() {
@@ -62,7 +101,7 @@ public class Book {
     }
 
     public void setAuthor(String author) {
-        this.author = author;
+        this.author = author != null ? author.trim() : null;
     }
 
     public String getIsbn() {
@@ -70,7 +109,7 @@ public class Book {
     }
 
     public void setIsbn(String isbn) {
-        this.isbn = isbn;
+        this.isbn = isbn != null ? isbn.trim() : null;
     }
 
     public String getCategory() {
@@ -78,7 +117,7 @@ public class Book {
     }
 
     public void setCategory(String category) {
-        this.category = category;
+        this.category = category != null ? category.trim() : null;
     }
 
     public Integer getTotalCopies() {
@@ -103,5 +142,10 @@ public class Book {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{id=" + id + ", title='" + title + "', author='" + author + "', isbn='" + isbn + "', available=" + availableCopies + "/" + totalCopies + "}";
     }
 }

@@ -36,7 +36,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Book>> getBookById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Book>> getBookById(@PathVariable Long id) {
         Book book = bookService.getBookById(id);
         return ResponseEntity.ok(ApiResponse.ok("Book details fetched", book));
     }
@@ -53,7 +53,7 @@ public class BookController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Book>> updateBook(
-            @PathVariable String id,
+            @PathVariable Long id,
             @Valid @RequestBody BookRequest request,
             HttpSession session) {
         checkLibrarianAuth(session);
@@ -63,7 +63,7 @@ public class BookController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteBook(
-            @PathVariable String id,
+            @PathVariable Long id,
             HttpSession session) {
         checkLibrarianAuth(session);
         bookService.deleteBook(id);

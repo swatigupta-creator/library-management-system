@@ -1,17 +1,16 @@
 package com.library.dto;
 
 import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class LoanIssueRequest {
 
-    @NotBlank(message = "Book selection is required")
-    private String bookId;
+    @NotNull(message = "Book selection is required")
+    private Long bookId;
 
-    @NotBlank(message = "Member selection is required")
-    private String memberId;
+    @NotNull(message = "Member selection is required")
+    private Long memberId;
 
     private LocalDate issueDate;
 
@@ -24,19 +23,19 @@ public class LoanIssueRequest {
     public LoanIssueRequest() {
     }
 
-    public String getBookId() {
+    public Long getBookId() {
         return bookId;
     }
 
-    public void setBookId(String bookId) {
+    public void setBookId(Long bookId) {
         this.bookId = bookId;
     }
 
-    public String getMemberId() {
+    public Long getMemberId() {
         return memberId;
     }
 
-    public void setMemberId(String memberId) {
+    public void setMemberId(Long memberId) {
         this.memberId = memberId;
     }
 

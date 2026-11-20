@@ -36,6 +36,13 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponse.ok("Members fetched successfully", members));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Member>> getMemberById(@PathVariable Long id, HttpSession session) {
+        checkLibrarianAuth(session);
+        Member member = memberService.getMemberById(id);
+        return ResponseEntity.ok(ApiResponse.ok("Member details fetched", member));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<Member>> addMember(
             @Valid @RequestBody MemberRequest request,

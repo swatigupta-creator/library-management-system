@@ -1,54 +1,85 @@
 package com.library.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import com.library.constant.LibraryConstants;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-@Document(collection = "loans")
+@Entity
+@Table(name = "loans")
 public class Loan {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    private LocalDate issueDate = LocalDate.now();
+    @Column(nullable = false)
+    private LocalDate issueDate;
 
+    @Column(nullable = false)
     private LocalDate dueDate;
 
     private LocalDate returnDate;
 
-    private String status = "ISSUED";
+    @Column(nullable = false, length = 30)
+    private String status;
 
+    @Column(length = 255)
     private String notes;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-
     public Loan() {
-        this.createdAt = LocalDateTime.now();
         this.issueDate = LocalDate.now();
-        this.status = "ISSUED";
+        this.dueDate = LocalDate.now().plusDays(LibraryConstants.DEFAULT_LOAN_DAYS);
+        this.status = LibraryConstants.STATUS_ISSUED;
     }
 
-    public Loan(Book book, Member member, LocalDate issueDate, LocalDate dueDate, String notes) {
+    public Loan(Book book, Member member) {
         this.book = book;
         this.member = member;
-        this.issueDate = issueDate != null ? issueDate : LocalDate.now();
-        this.dueDate = dueDate;
-        this.status = "ISSUED";
-        this.notes = notes;
-        this.createdAt = LocalDateTime.now();
+        this.issueDate = LocalDate.now();
+        this.dueDate = LocalDate.now().plusDays(LibraryConstants.DEFAULT_LOAN_DAYS);
+        this.status = LibraryConstants.STATUS_ISSUED;
     }
 
-    public String getId() {
+    public Loan(Book book, Member member, int durationDays, String notes) {
+        this.book = book;
+        this.member = member;
+        this.issueDate = LocalDate.now();
+        int validDays = durationDays > 0 ? durationDays : LibraryConstants.DEFAULT_LOAN_DAYS;
+        this.dueDate = LocalDate.now().plusDays(validDays);
+        this.status = LibraryConstants.STATUS_ISSUED;
+        this.notes = notes != null ? notes.trim() : null;
+    }
+
+    public void markAsReturned(LocalDate date) {
+        this.returnDate = (date != null) ? date : LocalDate.now();
+        this.status = LibraryConstants.STATUS_RETURNED;
+    }
+
+    public boolean isReturned() {
+        return LibraryConstants.STATUS_RETURNED.equalsIgnoreCase(this.status);
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -97,7 +128,7 @@ public class Loan {
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.status = status != null ? status.trim().toUpperCase() : LibraryConstants.STATUS_ISSUED;
     }
 
     public String getNotes() {
@@ -105,14 +136,13 @@ public class Loan {
     }
 
     public void setNotes(String notes) {
-        this.notes = notes;
+        this.notes = notes != null ? notes.trim() : null;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    @Override
+    public String toString() {
+        return "Loan{id=" + id + ", book=" + (book != null ? book.getTitle() : "null") +
+                ", member=" + (member != null ? member.getName() : "null") +
+                ", status='" + status + "', dueDate=" + dueDate + "}";
     }
 }
