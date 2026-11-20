@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBAU Lucknow - Gautam Buddha Central Library</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <!-- Navigation Bar with BBAU University Logo -->
     <header class="navbar">
         <div class="nav-container">
-            <a href="/index.html" class="logo">
-                <img src="/images/bbau-logo.png" alt="BBAU Logo" class="bbau-logo-img">
+            <a href="index.html" class="logo">
+                <img src="images/bbau-logo.png" alt="BBAU Logo" class="bbau-logo-img">
                 <div class="logo-text-group">
                     <span class="logo-main-title">BBAU Lucknow</span>
                     <span class="logo-sub-title">Gautam Buddha Central Library</span>
@@ -20,8 +20,8 @@
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="/index.html" class="active">Home</a></li>
-                    <li><a href="/books.html">Browse Books</a></li>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="books.html">Browse Books</a></li>
                     <li id="nav-auth-item">
                         <button onclick="openRoleModal()" class="btn btn-primary btn-sm">🔑 Login / Register</button>
                     </li>
@@ -104,7 +104,7 @@
                     <p style="color: var(--text-muted); font-size: 0.92rem;">Real-time database catalog. Check available copies or borrow books instantly.</p>
                 </div>
                 <div id="admin-home-actions" style="display: none;">
-                    <a href="/librarian.html" class="btn btn-primary btn-sm">⚙️ Librarian Admin Dashboard</a>
+                    <a href="librarian.html" class="btn btn-primary btn-sm">⚙️ Librarian Admin Dashboard</a>
                 </div>
             </div>
 
@@ -130,7 +130,7 @@
                         <h3 style="font-size: 1.15rem; font-weight: 700;">Books Inventory</h3>
                         <span id="home-books-count" style="font-size: 0.88rem; color: var(--text-muted); font-weight: 500;">Loading...</span>
                     </div>
-                    <a href="/books.html" class="btn btn-outline btn-sm">Open Full Catalog Page ↗</a>
+                    <a href="books.html" class="btn btn-outline btn-sm">Open Full Catalog Page ↗</a>
                 </div>
                 <div class="responsive-table">
                     <table>
@@ -196,7 +196,7 @@
             <div class="table-card" style="padding: 0; overflow: hidden;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: center;">
                     <div style="height: 100%; min-height: 280px; max-height: 380px; overflow: hidden; background: #0f172a;">
-                        <img src="/images/bbau-library.jpg" alt="Gautam Buddha Central Library BBAU" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        <img src="images/bbau-library.jpg" alt="Gautam Buddha Central Library BBAU" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                     </div>
                     <div style="padding: 2.25rem;">
                         <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">University Infrastructure</div>
@@ -249,7 +249,7 @@
             <!-- STEP 1: CHOOSE ROLE (Student vs Admin) -->
             <div id="view-role-select" style="padding: 2rem;">
                 <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <img src="/images/bbau-logo.png" alt="BBAU Logo" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                    <img src="images/bbau-logo.png" alt="BBAU Logo" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
                     <h2 style="font-size: 1.35rem; color: var(--text-main); font-weight: 800;">Babasaheb Bhimrao Ambedkar University</h2>
                     <div style="font-size: 0.92rem; font-weight: 600; color: var(--accent);">Gautam Buddha Central Library</div>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem;">Please select whether you are a <strong>Student</strong> or <strong>Librarian / Admin</strong> to continue:</p>
@@ -396,13 +396,13 @@
     <!-- Footer with BBAU University Details -->
     <footer>
         <div style="display: flex; align-items: center; justify-content: center; gap: 0.65rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-            <img src="/images/bbau-logo.png" alt="BBAU" style="height: 28px; width: auto; object-fit: contain;">
+            <img src="images/bbau-logo.png" alt="BBAU" style="height: 28px; width: auto; object-fit: contain;">
             <strong style="color: var(--text-main);">Babasaheb Bhimrao Ambedkar University (A Central University), Lucknow</strong>
         </div>
         <p style="font-size: 0.85rem; color: var(--text-muted);">Gautam Buddha Central Library &copy; 2026. Vidya Vihar, Raebareli Road, Lucknow, Uttar Pradesh - 226025.</p>
     </footer>
 
-    <script src="/js/common.js"></script>
+    <script src="js/common.js"></script>
     <script>
         let currentAuth = null;
         let homeBooks = [];
@@ -612,7 +612,7 @@
                 if (res.ok && json.success) {
                     showAlert('Admin login successful! Redirecting to Librarian Portal...', 'success');
                     setTimeout(() => {
-                        window.location.href = '/librarian.html';
+                        window.location.href = 'librarian.html';
                     }, 500);
                 } else {
                     errBox.textContent = json.message || 'Invalid username or password';
@@ -649,7 +649,7 @@
             if (auth.role === 'ADMIN') {
                 title.textContent = 'Welcome, BBAU Librarian Administrator!';
                 desc.textContent = 'You have administrative control to manage books inventory, members, book issues, and returns.';
-                roleBtn.innerHTML = `<a href="/librarian.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">⚙️ Go to Librarian Dashboard</a>`;
+                roleBtn.innerHTML = `<a href="librarian.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">⚙️ Go to Librarian Dashboard</a>`;
                 document.getElementById('student-loans-section').style.display = 'none';
                 if (adminActions) adminActions.style.display = 'block';
             } else if (auth.role === 'STUDENT') {

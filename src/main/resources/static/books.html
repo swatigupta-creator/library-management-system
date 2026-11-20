@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBAU Lucknow - Browse Books Catalog</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <!-- Navigation Bar -->
     <header class="navbar">
         <div class="nav-container">
-            <a href="/index.html" class="logo">
-                <img src="/images/bbau-logo.png" alt="BBAU Logo" class="bbau-logo-img">
+            <a href="index.html" class="logo">
+                <img src="images/bbau-logo.png" alt="BBAU Logo" class="bbau-logo-img">
                 <div class="logo-text-group">
                     <span class="logo-main-title">BBAU Lucknow</span>
                     <span class="logo-sub-title">Gautam Buddha Central Library</span>
@@ -20,8 +20,8 @@
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="/index.html">Home</a></li>
-                    <li><a href="/books.html" class="active">Browse Books</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="books.html" class="active">Browse Books</a></li>
                     <li id="nav-auth-item">
                         <button onclick="openRoleModal()" class="btn btn-primary btn-sm">🔑 Login / Register</button>
                     </li>
@@ -56,7 +56,7 @@
                 </div>
                 <div style="display: flex; gap: 0.6rem; align-items: center;">
                     <button onclick="toggleStudentLoansView()" id="btn-toggle-loans" class="btn btn-outline btn-sm" style="border-color: #86efac; color: #166534; background: #fff;">📖 My Borrowed Books (<span id="student-loans-quick-count">0</span>)</button>
-                    <a href="/index.html" class="btn btn-primary btn-sm">Home Dashboard</a>
+                    <a href="index.html" class="btn btn-primary btn-sm">Home Dashboard</a>
                 </div>
             </div>
 
@@ -227,7 +227,7 @@
             <!-- STEP 1: CHOOSE ROLE (Student vs Admin) -->
             <div id="view-role-select" style="padding: 2rem;">
                 <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <img src="/images/bbau-logo.png" alt="BBAU Logo" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                    <img src="images/bbau-logo.png" alt="BBAU Logo" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
                     <h2 style="font-size: 1.35rem; color: var(--text-main); font-weight: 800;">Babasaheb Bhimrao Ambedkar University</h2>
                     <div style="font-size: 0.92rem; font-weight: 600; color: var(--accent);">Gautam Buddha Central Library</div>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem;">Please select whether you are a <strong>Student</strong> or <strong>Librarian / Admin</strong> to continue:</p>
@@ -374,13 +374,13 @@
     <!-- Footer with BBAU University Details -->
     <footer>
         <div style="display: flex; align-items: center; justify-content: center; gap: 0.65rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-            <img src="/images/bbau-logo.png" alt="BBAU" style="height: 28px; width: auto; object-fit: contain;">
+            <img src="images/bbau-logo.png" alt="BBAU" style="height: 28px; width: auto; object-fit: contain;">
             <strong style="color: var(--text-main);">Babasaheb Bhimrao Ambedkar University (A Central University), Lucknow</strong>
         </div>
         <p style="font-size: 0.85rem; color: var(--text-muted);">Gautam Buddha Central Library &copy; 2026. Vidya Vihar, Raebareli Road, Lucknow, Uttar Pradesh - 226025.</p>
     </footer>
 
-    <script src="/js/common.js"></script>
-    <script src="/js/books.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/books.js"></script>
 </body>
 </html>
