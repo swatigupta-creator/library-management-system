@@ -98,13 +98,13 @@
 
         <!-- Student Personal Section: My Saved Wishlist (Visible only when logged in as Student) -->
         <section id="student-wishlist-section" style="display: none; margin-bottom: 2rem;">
-            <div class="table-card" style="border-top: 3px solid #e11d48;">
+            <div class="table-card">
                 <div class="table-header">
                     <div>
-                        <h2 style="color: #be123c;">❤️ My Saved Wishlist</h2>
+                        <h2>My Saved Wishlist</h2>
                         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Books you saved to read or borrow later. Borrow directly or manage your wishlist.</p>
                     </div>
-                    <span id="student-wishlist-count" style="font-size: 0.9rem; color: #be123c; font-weight: 700;">Loading...</span>
+                    <span id="student-wishlist-count" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Loading...</span>
                 </div>
                 <div class="responsive-table">
                     <table>
@@ -700,7 +700,7 @@
                 desc.textContent = 'Search books in the catalog, check live availability, borrow books instantly, and manage your wishlist.';
                 roleBtn.innerHTML = `
                     <a href="#student-loans-section" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">📖 Borrowed Books</a>
-                    <a href="#student-wishlist-section" class="btn btn-primary" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); margin-left: 0.4rem;">❤️ My Wishlist</a>
+                    <a href="#student-wishlist-section" class="btn btn-primary" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); margin-left: 0.4rem;">My Wishlist</a>
                 `;
                 document.getElementById('student-loans-section').style.display = 'block';
                 document.getElementById('student-wishlist-section').style.display = 'block';
@@ -781,8 +781,8 @@
                     if (studentWishlist.length === 0) {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem; color: #be123c;">
-                                    Your wishlist is currently empty. Explore the catalog below and click <strong>"🤍 Wishlist"</strong> to save any book!
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Your wishlist is currently empty. Explore the catalog below and click <strong>"+ Wishlist"</strong> to save any book!
                                 </td>
                             </tr>
                         `;
@@ -800,7 +800,7 @@
                             ? `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">📥 Borrow</button>`
                             : `<span style="font-size: 0.78rem; color: var(--text-muted);">Out of Stock</span>`;
 
-                        const removeBtn = `<button class="btn btn-danger btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" title="Remove from Wishlist">🗑️ Remove</button>`;
+                        const removeBtn = `<button class="btn btn-outline btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" title="Remove from Wishlist">Remove</button>`;
 
                         return `
                             <tr>
@@ -1005,10 +1005,10 @@
                 let actionHtml = '';
                 if (isStudent) {
                     const isWishlisted = homeWishlistedBookIds.has(b.id);
-                    const heartIcon = isWishlisted ? '❤️' : '🤍';
-                    const heartTitle = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
-                    const heartBtnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
-                    const wishlistBtn = `<button class="${heartBtnClass}" onclick="handleToggleWishlist(${b.id})" title="${heartTitle}">${heartIcon} <span style="font-size:0.75rem;">${isWishlisted ? 'Wishlisted' : 'Wishlist'}</span></button>`;
+                    const label = isWishlisted ? '✓ Wishlisted' : '+ Wishlist';
+                    const title = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
+                    const btnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
+                    const wishlistBtn = `<button class="${btnClass}" onclick="handleToggleWishlist(${b.id})" title="${title}">${label}</button>`;
 
                     let borrowBtn = '';
                     if (isAvailable) {
@@ -1023,7 +1023,7 @@
                     actionHtml = `
                         <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">
                             <button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">🔑 Login</button>
-                            <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">🤍 Wishlist</button>
+                            <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">+ Wishlist</button>
                         </div>
                     `;
                 }

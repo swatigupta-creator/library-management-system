@@ -718,7 +718,7 @@ footer {
 }
 
 /* ==============================================================
-   Wishlist Feature Styles
+   Wishlist Feature Styles - Clean & Professional
    ============================================================== */
 .btn-wishlist {
     display: inline-flex;
@@ -727,40 +727,41 @@ footer {
     gap: 0.35rem;
     padding: 0.32rem 0.65rem;
     font-size: 0.82rem;
-    font-weight: 600;
+    font-weight: 500;
     border-radius: var(--radius-sm);
-    border: 1px solid #fecdd3;
-    background: #fff1f2;
-    color: #e11d48;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--text-main);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     text-decoration: none;
     line-height: 1.2;
 }
 
 .btn-wishlist:hover {
-    background: #ffe4e6;
-    border-color: #fda4af;
-    transform: translateY(-1px);
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: var(--primary);
 }
 
 .btn-wishlist.active {
-    background: #e11d48;
-    color: #ffffff;
-    border-color: #be123c;
-    box-shadow: 0 2px 5px rgba(225, 29, 72, 0.28);
+    background: #eff6ff;
+    color: var(--primary);
+    border-color: #93c5fd;
+    font-weight: 600;
 }
 
 .btn-wishlist.active:hover {
-    background: #be123c;
+    background: #dbeafe;
+    border-color: #60a5fa;
 }
 
 .wishlist-pill-badge {
-    background: #e11d48;
+    background: var(--primary);
     color: white;
     border-radius: 9999px;
     padding: 0.15rem 0.45rem;
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 600;
     margin-left: 0.35rem;
 }

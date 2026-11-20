@@ -163,7 +163,7 @@ async function loadStudentWishlist() {
             if (!tbody) return;
 
             if (studentWishlist.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 1.5rem; color: #be123c;">Your wishlist is empty. Click 🤍 Wishlist on any book in the catalog below to save it here!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">Your wishlist is empty. Click "+ Wishlist" on any book in the catalog below to save it here!</td></tr>`;
                 return;
             }
 
@@ -180,7 +180,7 @@ async function loadStudentWishlist() {
                     ? `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">📥 Borrow</button>`
                     : `<span style="font-size:0.75rem; color:var(--text-muted);">Out of Stock</span>`;
 
-                const removeBtn = `<button class="btn btn-danger btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;" title="Remove from Wishlist">🗑️ Remove</button>`;
+                const removeBtn = `<button class="btn btn-outline btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;" title="Remove from Wishlist">Remove</button>`;
 
                 return `
                     <tr>
@@ -223,7 +223,7 @@ function toggleStudentWishlistView() {
         }
     } else {
         drawer.style.display = 'none';
-        if (btn) btn.textContent = `❤️ My Wishlist (${studentWishlist.length})`;
+        if (btn) btn.textContent = `My Wishlist (${studentWishlist.length})`;
     }
 }
 
@@ -415,10 +415,10 @@ function renderBooksTable(books) {
             `;
         } else if (isStudent) {
             const isWishlisted = wishlistedBookIds.has(b.id);
-            const heartIcon = isWishlisted ? '❤️' : '🤍';
-            const heartTitle = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
-            const heartBtnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
-            const wishlistBtn = `<button class="${heartBtnClass}" onclick="handleToggleWishlist(${b.id})" title="${heartTitle}">${heartIcon} <span style="font-size:0.75rem;">${isWishlisted ? 'Wishlisted' : 'Wishlist'}</span></button>`;
+            const label = isWishlisted ? '✓ Wishlisted' : '+ Wishlist';
+            const title = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
+            const btnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
+            const wishlistBtn = `<button class="${btnClass}" onclick="handleToggleWishlist(${b.id})" title="${title}">${label}</button>`;
 
             let borrowBtn = '';
             if (isAvailable) {
@@ -440,7 +440,7 @@ function renderBooksTable(books) {
                 <td>
                     <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">
                         <button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">🔑 Login</button>
-                        <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">🤍 Wishlist</button>
+                        <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">+ Wishlist</button>
                     </div>
                 </td>
             `;

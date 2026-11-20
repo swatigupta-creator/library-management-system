@@ -114,7 +114,7 @@ public class WishlistController {
         Long memberId = resolveMemberId(session, request, queryMemberId);
         Wishlist wishlist = wishlistService.addToWishlist(bookId, memberId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Book added to your wishlist ❤️", wishlist));
+                .body(ApiResponse.ok("Book added to your wishlist", wishlist));
     }
 
     @DeleteMapping("/{bookId}")
@@ -141,7 +141,7 @@ public class WishlistController {
         data.put("wishlisted", added);
         data.put("action", added ? "ADDED" : "REMOVED");
 
-        String msg = added ? "Book added to your wishlist ❤️" : "Book removed from wishlist";
+        String msg = added ? "Book added to your wishlist" : "Book removed from wishlist";
         return ResponseEntity.ok(ApiResponse.ok(msg, data));
     }
 }

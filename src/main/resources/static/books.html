@@ -55,17 +55,17 @@
                     <p style="font-size: 0.88rem; color: #15803d; margin-top: 0.15rem;">You can borrow available books directly, save books to your personal wishlist, or track active loans.</p>
                 </div>
                 <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-                    <button onclick="toggleStudentWishlistView()" id="btn-toggle-wishlist" class="btn btn-outline btn-sm" style="border-color: #fda4af; color: #e11d48; background: #fff;">❤️ My Wishlist (<span id="student-wishlist-quick-count">0</span>)</button>
+                    <button onclick="toggleStudentWishlistView()" id="btn-toggle-wishlist" class="btn btn-outline btn-sm" style="background: #fff;">My Wishlist (<span id="student-wishlist-quick-count">0</span>)</button>
                     <button onclick="toggleStudentLoansView()" id="btn-toggle-loans" class="btn btn-outline btn-sm" style="border-color: #86efac; color: #166534; background: #fff;">📖 My Borrowed Books (<span id="student-loans-quick-count">0</span>)</button>
                     <a href="index.html" class="btn btn-primary btn-sm">Home Dashboard</a>
                 </div>
             </div>
 
             <!-- Expandable My Wishlist Drawer inside books.html -->
-            <div id="student-wishlist-drawer" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #fda4af;">
+            <div id="student-wishlist-drawer" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                    <h4 style="font-size: 0.98rem; color: #be123c; font-weight: 700;">❤️ Your Saved Wishlist</h4>
-                    <span style="font-size: 0.82rem; color: #9f1239;">Books you plan to read or borrow later</span>
+                    <h4 style="font-size: 0.98rem; color: var(--primary); font-weight: 700;">My Wishlist</h4>
+                    <span style="font-size: 0.82rem; color: var(--text-muted);">Books you saved to read or borrow later</span>
                 </div>
                 <div class="responsive-table">
                     <table>
@@ -81,7 +81,7 @@
                             </tr>
                         </thead>
                         <tbody id="drawer-wishlist-tbody">
-                            <tr><td colspan="7" style="text-align:center; padding: 1rem; color: #9f1239;">Loading your wishlist...</td></tr>
+                            <tr><td colspan="7" style="text-align:center; padding: 1rem; color: var(--text-muted);">Loading your wishlist...</td></tr>
                         </tbody>
                     </table>
                 </div>
