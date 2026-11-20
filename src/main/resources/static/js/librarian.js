@@ -95,8 +95,8 @@ function setupForms() {
 // --------------------------------------------------------------
 async function loadDashboardStats() {
     try {
-        const res = await fetch('/api/loans/stats');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/loans/stats`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (json.success && json.data) {
             document.getElementById('stat-total-books').textContent = json.data.totalBooks;
             document.getElementById('stat-available-copies').textContent = json.data.availableCopies;
@@ -113,8 +113,8 @@ async function loadDashboardStats() {
 // --------------------------------------------------------------
 async function loadBooks() {
     try {
-        const res = await fetch('/api/books');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/books`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentBooks = json.data;
             renderBooksTable();
@@ -172,13 +172,14 @@ async function handleAddBook(e) {
     };
 
     try {
-        const res = await fetch('/api/books', {
+        const res = await fetch(`${API_BASE}/api/books`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert(`Book '${payload.title}' added successfully!`, 'success');
             document.getElementById('add-book-form').reset();
@@ -228,13 +229,14 @@ async function handleUpdateBook(e) {
     };
 
     try {
-        const res = await fetch(`/api/books/${id}`, {
+        const res = await fetch(`${API_BASE}/api/books/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert('Book updated successfully!', 'success');
             closeEditModal();
@@ -259,8 +261,8 @@ async function deleteBook(id) {
     }
 
     try {
-        const res = await fetch(`/api/books/${id}`, { method: 'DELETE' });
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/books/${id}`, { method: 'DELETE', credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert('Book deleted successfully', 'success');
             loadBooks();
@@ -278,8 +280,8 @@ async function deleteBook(id) {
 // --------------------------------------------------------------
 async function loadMembers() {
     try {
-        const res = await fetch('/api/members');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/members`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentMembers = json.data;
             renderMembersTable();
@@ -321,13 +323,14 @@ async function handleAddMember(e) {
     };
 
     try {
-        const res = await fetch('/api/members', {
+        const res = await fetch(`${API_BASE}/api/members`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert(`Member '${payload.name}' registered successfully!`, 'success');
             document.getElementById('add-member-form').reset();
@@ -382,8 +385,8 @@ function populateIssueFormDropdowns() {
 
 async function loadLoans() {
     try {
-        const res = await fetch('/api/loans');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/loans`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (json.success && Array.isArray(json.data)) {
             currentLoans = json.data;
             renderLoansTable();
@@ -468,13 +471,14 @@ async function handleIssueBook(e) {
     };
 
     try {
-        const res = await fetch('/api/loans/issue', {
+        const res = await fetch(`${API_BASE}/api/loans/issue`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert('Book issued successfully! Inventory availability updated.', 'success');
             document.getElementById('issue-book-form').reset();
@@ -502,11 +506,12 @@ async function returnBook(loanId) {
     }
 
     try {
-        const res = await fetch(`/api/loans/${loanId}/return`, {
-            method: 'PUT'
+        const res = await fetch(`${API_BASE}/api/loans/${loanId}/return`, {
+            method: 'PUT',
+            credentials: 'include'
         });
 
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' returned successfully! Book copy restored to inventory.`, 'success');
             await loadBooks();

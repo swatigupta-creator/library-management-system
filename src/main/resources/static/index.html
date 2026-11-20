@@ -508,12 +508,13 @@
             };
 
             try {
-                const res = await fetch('/api/auth/student/login', {
+                const res = await fetch(`${API_BASE}/api/auth/student/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
-                const json = await res.json();
+                const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success) {
                     showAlert(json.message || 'Login successful! Welcome to Student Portal.', 'success');
@@ -556,12 +557,13 @@
             };
 
             try {
-                const res = await fetch('/api/auth/student/register', {
+                const res = await fetch(`${API_BASE}/api/auth/student/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
-                const json = await res.json();
+                const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success) {
                     showAlert('Account created successfully! Welcome, ' + payload.name + '!', 'success');
@@ -602,12 +604,13 @@
             };
 
             try {
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
-                const json = await res.json();
+                const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success) {
                     showAlert('Admin login successful! Redirecting to Librarian Portal...', 'success');
@@ -669,8 +672,8 @@
             const countLabel = document.getElementById('student-loans-count');
 
             try {
-                const res = await fetch('/api/loans/my-loans');
-                const json = await res.json();
+                const res = await fetch(`${API_BASE}/api/loans/my-loans`, { credentials: 'include' });
+                const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success && Array.isArray(json.data)) {
                     studentLoansList = json.data;
@@ -726,8 +729,8 @@
             }
 
             try {
-                const res = await fetch(`/api/loans/student/return/${loanId}`, { method: 'PUT' });
-                const json = await res.json();
+                const res = await fetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT', credentials: 'include' });
+                const json = await parseJsonResponse(res);
                 if (res.ok && json.success) {
                     showAlert(`Book '${bookTitle}' returned successfully! Copy restored to library.`, 'success');
                     await loadStudentLoans();
@@ -764,8 +767,8 @@
             }
 
             try {
-                const res = await fetch(`/api/loans/student/borrow/${bookId}`, { method: 'POST' });
-                const json = await res.json();
+                const res = await fetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST', credentials: 'include' });
+                const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success) {
                     showAlert(`Book '${bookTitle}' borrowed successfully! Due in 14 days.`, 'success');
@@ -785,8 +788,8 @@
         // -------------------------------------------------------------
         async function loadHomeBooks() {
             try {
-                const res = await fetch('/api/books');
-                const json = await res.json();
+                const res = await fetch(`${API_BASE}/api/books`, { credentials: 'include' });
+                const json = await parseJsonResponse(res);
                 if (json.success && Array.isArray(json.data)) {
                     homeBooks = json.data;
                     renderHomeBooks();
@@ -886,8 +889,8 @@
         // -------------------------------------------------------------
         async function loadStats() {
             try {
-                const res = await fetch('/api/loans/stats');
-                const result = await res.json();
+                const res = await fetch(`${API_BASE}/api/loans/stats`, { credentials: 'include' });
+                const result = await parseJsonResponse(res);
                 if (result.success && result.data) {
                     const stats = result.data;
                     document.getElementById('stat-total-books').textContent = stats.totalBooks;

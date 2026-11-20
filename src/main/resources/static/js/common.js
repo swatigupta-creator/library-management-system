@@ -2,6 +2,28 @@
 // Library Management System - Common JavaScript Utilities
 // ==============================================================
 
+// Base URL: If not served directly from port 8080 (e.g. VS Code Live Server on 5500, or file:///), point to Spring Boot backend at http://localhost:8080
+const API_BASE = (window.location.port === '8080')
+    ? ''
+    : 'http://localhost:8080';
+
+/**
+ * Safely parse JSON from a fetch Response.
+ * Detects if the server or file system returned an HTML error page (e.g. 404, file not found)
+ * and produces a friendly error instead of "Unexpected token '<' ... is not valid JSON".
+ */
+async function parseJsonResponse(res) {
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        if (text && text.trim().startsWith('<')) {
+            throw new Error('Please open this website through http://localhost:8080/ (Spring Boot server must be running).');
+        }
+        throw new Error('Invalid response from server: ' + err.message);
+    }
+}
+
 /**
  * Show a floating alert toast message
  * @param {string} message 
@@ -38,14 +60,14 @@ function showAlert(message, type = 'info') {
  */
 async function checkAuthStatus() {
     try {
-        const res = await fetch('/api/auth/status');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/auth/status`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (json.success && json.data) {
             return json.data;
         }
         return { authenticated: false, role: null };
     } catch (e) {
-        console.error('Failed to check auth status', e);
+        console.warn('Failed to check auth status', e);
         return { authenticated: false, role: null };
     }
 }
@@ -72,7 +94,7 @@ function updateNavbar(auth) {
                 <span style="font-size: 0.85rem; color: var(--text-muted);">
                     🛡️ <strong style="color: var(--primary);">Librarian (Admin)</strong>
                 </span>
-                <a href="/librarian.html" class="btn btn-primary btn-sm">Admin Dashboard</a>
+                <a href="librarian.html" class="btn btn-primary btn-sm">Admin Dashboard</a>
                 <button onclick="logout()" class="btn btn-outline btn-sm">Logout</button>
             </div>
         `;
@@ -93,11 +115,11 @@ function updateNavbar(auth) {
  */
 async function logout() {
     try {
-        const res = await fetch('/api/auth/logout', { method: 'POST' });
-        const data = await res.json();
+        const res = await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+        const data = await parseJsonResponse(res);
         showAlert('Logged out successfully', 'success');
         setTimeout(() => {
-            window.location.href = '/index.html';
+            window.location.href = 'index.html';
         }, 400);
     } catch (e) {
         showAlert('Logout failed: ' + e.message, 'error');

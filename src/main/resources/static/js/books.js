@@ -68,8 +68,8 @@ async function loadStudentDrawerLoans() {
     if (!tbody || !quickCount) return;
 
     try {
-        const res = await fetch('/api/loans/my-loans');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/loans/my-loans`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success && Array.isArray(json.data)) {
             studentLoans = json.data;
             const activeCount = studentLoans.filter(l => l.status === 'ISSUED').length;
@@ -126,8 +126,8 @@ async function handleDrawerReturn(loanId) {
     if (!confirm(`Confirm return of "${bookTitle}"?`)) return;
 
     try {
-        const res = await fetch(`/api/loans/student/return/${loanId}`, { method: 'PUT' });
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT', credentials: 'include' });
+        const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' returned successfully!`, 'success');
             await loadStudentDrawerLoans();
@@ -163,8 +163,8 @@ async function handleStudentBorrow(bookId) {
     }
 
     try {
-        const res = await fetch(`/api/loans/student/borrow/${bookId}`, { method: 'POST' });
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST', credentials: 'include' });
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' borrowed successfully! Due in 14 days.`, 'success');
@@ -209,8 +209,8 @@ async function loadBooks() {
     tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--text-muted);">Loading books from database...</td></tr>`;
 
     try {
-        const res = await fetch('/api/books');
-        const json = await res.json();
+        const res = await fetch(`${API_BASE}/api/books`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
 
         if (json.success && Array.isArray(json.data)) {
             allBooks = json.data;
@@ -401,12 +401,13 @@ async function handleAddBookSubmit(e) {
     };
 
     try {
-        const res = await fetch('/api/books', {
+        const res = await fetch(`${API_BASE}/api/books`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert(`Book '${payload.title}' added successfully!`, 'success');
@@ -459,12 +460,13 @@ async function handleEditBookSubmit(e) {
     };
 
     try {
-        const res = await fetch(`/api/books/${id}`, {
+        const res = await fetch(`${API_BASE}/api/books/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert('Book updated successfully!', 'success');
@@ -492,10 +494,11 @@ async function deleteBook(id) {
     }
 
     try {
-        const res = await fetch(`/api/books/${id}`, {
-            method: 'DELETE'
+        const res = await fetch(`${API_BASE}/api/books/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert(`Book '${title}' deleted successfully!`, 'success');
@@ -560,12 +563,13 @@ async function handleStudentLogin(e) {
     };
 
     try {
-        const res = await fetch('/api/auth/student/login', {
+        const res = await fetch(`${API_BASE}/api/auth/student/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert('Login successful! Welcome to Student Portal.', 'success');
@@ -603,12 +607,13 @@ async function handleStudentRegister(e) {
     };
 
     try {
-        const res = await fetch('/api/auth/student/register', {
+        const res = await fetch(`${API_BASE}/api/auth/student/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert('Account created successfully! Welcome, ' + payload.name + '!', 'success');
@@ -644,12 +649,13 @@ async function handleAdminLogin(e) {
     };
 
     try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
             showAlert('Admin login successful! Admin controls unlocked.', 'success');
