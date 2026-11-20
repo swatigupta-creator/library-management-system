@@ -544,10 +544,9 @@
             };
 
             try {
-                const res = await fetch(`${API_BASE}/api/auth/student/login`, {
+                const res = await apiFetch(`${API_BASE}/api/auth/student/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
                 const json = await parseJsonResponse(res);
@@ -556,6 +555,7 @@
                     showAlert(json.message || 'Login successful! Welcome to Student Portal.', 'success');
                     closeRoleModal();
                     currentAuth = json.data;
+                    setStoredAuth(currentAuth);
                     updateNavbar(currentAuth);
                     setupUserHero(currentAuth);
                     await loadStudentLoans();
@@ -594,10 +594,9 @@
             };
 
             try {
-                const res = await fetch(`${API_BASE}/api/auth/student/register`, {
+                const res = await apiFetch(`${API_BASE}/api/auth/student/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
                 const json = await parseJsonResponse(res);
@@ -606,9 +605,11 @@
                     showAlert('Account created successfully! Welcome, ' + payload.name + '!', 'success');
                     closeRoleModal();
                     currentAuth = json.data;
+                    setStoredAuth(currentAuth);
                     updateNavbar(currentAuth);
                     setupUserHero(currentAuth);
                     await loadStudentLoans();
+                    await loadStudentWishlist();
                     await loadHomeBooks();
                     loadStats();
                 } else {
@@ -715,7 +716,7 @@
             const countLabel = document.getElementById('student-loans-count');
 
             try {
-                const res = await fetch(`${API_BASE}/api/loans/my-loans`, { credentials: 'include' });
+                const res = await apiFetch(`${API_BASE}/api/loans/my-loans`);
                 const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success && Array.isArray(json.data)) {
@@ -769,7 +770,7 @@
             if (!tbody || !countLabel) return;
 
             try {
-                const res = await fetch(`${API_BASE}/api/wishlist`, { credentials: 'include' });
+                const res = await apiFetch(`${API_BASE}/api/wishlist`);
                 const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success && Array.isArray(json.data)) {
@@ -836,9 +837,8 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
-                    method: 'POST',
-                    credentials: 'include'
+                const res = await apiFetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
+                    method: 'POST'
                 });
                 const json = await parseJsonResponse(res);
                 if (res.ok && json.success) {
@@ -865,7 +865,7 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT', credentials: 'include' });
+                const res = await apiFetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT' });
                 const json = await parseJsonResponse(res);
                 if (res.ok && json.success) {
                     showAlert(`Book '${bookTitle}' returned successfully! Copy restored to library.`, 'success');
@@ -904,7 +904,7 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST', credentials: 'include' });
+                const res = await apiFetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST' });
                 const json = await parseJsonResponse(res);
 
                 if (res.ok && json.success) {
@@ -914,7 +914,15 @@
                     await loadHomeBooks();
                     loadStats();
                 } else {
-                    showAlert(json.message || 'Failed to borrow book', 'error');
+                    if (res.status === 401) {
+                        currentAuth = { authenticated: false, role: null };
+                        clearStoredAuth();
+                        updateNavbar(currentAuth);
+                        openRoleModal();
+                        showAlert('Student login required or session expired. Please log in.', 'info');
+                    } else {
+                        showAlert(json.message || 'Failed to borrow book', 'error');
+                    }
                 }
             } catch (e) {
                 showAlert('Error borrowing book: ' + e.message, 'error');
@@ -926,7 +934,7 @@
         // -------------------------------------------------------------
         async function loadHomeBooks() {
             try {
-                const res = await fetch(`${API_BASE}/api/books`, { credentials: 'include' });
+                const res = await apiFetch(`${API_BASE}/api/books`);
                 const json = await parseJsonResponse(res);
                 if (json.success && Array.isArray(json.data)) {
                     homeBooks = json.data;

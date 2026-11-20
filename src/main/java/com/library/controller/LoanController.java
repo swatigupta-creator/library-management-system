@@ -4,9 +4,12 @@ import com.library.dto.ApiResponse;
 import com.library.dto.DashboardStatsResponse;
 import com.library.dto.LoanIssueRequest;
 import com.library.entity.Loan;
+import com.library.entity.Member;
 import com.library.exception.ResourceNotFoundException;
 import com.library.exception.UnauthorizedException;
+import com.library.repository.MemberRepository;
 import com.library.service.LoanService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,15 +23,58 @@ import java.util.List;
 public class LoanController {
 
     private final LoanService loanService;
+    private final MemberRepository memberRepository;
 
-    public LoanController(LoanService loanService) {
+    public LoanController(LoanService loanService, MemberRepository memberRepository) {
         this.loanService = loanService;
+        this.memberRepository = memberRepository;
     }
 
     private void checkLibrarianAuth(HttpSession session) {
         if (!Boolean.TRUE.equals(session.getAttribute(AuthController.SESSION_AUTH_KEY))) {
             throw new UnauthorizedException("Unauthorized: Librarian login required");
         }
+    }
+
+    private Member resolveStudent(HttpSession session, HttpServletRequest request) {
+        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
+        Long memberId = (Long) session.getAttribute(AuthController.SESSION_MEMBER_ID_KEY);
+        if ("STUDENT".equals(role) && memberId != null) {
+            return memberRepository.findById(memberId)
+                    .filter(Member::isActive)
+                    .orElseThrow(() -> new UnauthorizedException("Student account is inactive or not found"));
+        }
+
+        // Restore from X-Student-Id header
+        String headerId = request.getHeader("X-Student-Id");
+        if (headerId != null && !headerId.trim().isEmpty()) {
+            try {
+                Long id = Long.parseLong(headerId.trim());
+                Member member = memberRepository.findById(id).orElse(null);
+                if (member != null && member.isActive()) {
+                    session.setAttribute(AuthController.SESSION_ROLE_KEY, "STUDENT");
+                    session.setAttribute(AuthController.SESSION_MEMBER_ID_KEY, member.getId());
+                    session.setAttribute(AuthController.SESSION_USER_KEY, member.getName());
+                    session.setAttribute(AuthController.SESSION_EMAIL_KEY, member.getEmail());
+                    return member;
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // Restore from X-Student-Email header
+        String headerEmail = request.getHeader("X-Student-Email");
+        if (headerEmail != null && !headerEmail.trim().isEmpty()) {
+            Member member = memberRepository.findByEmailIgnoreCase(headerEmail.trim()).orElse(null);
+            if (member != null && member.isActive()) {
+                session.setAttribute(AuthController.SESSION_ROLE_KEY, "STUDENT");
+                session.setAttribute(AuthController.SESSION_MEMBER_ID_KEY, member.getId());
+                session.setAttribute(AuthController.SESSION_USER_KEY, member.getName());
+                session.setAttribute(AuthController.SESSION_EMAIL_KEY, member.getEmail());
+                return member;
+            }
+        }
+
+        throw new UnauthorizedException("Student login required to borrow a book");
     }
 
     @GetMapping
@@ -60,26 +106,21 @@ public class LoanController {
     }
 
     @GetMapping("/my-loans")
-    public ResponseEntity<ApiResponse<List<Loan>>> getMyLoans(HttpSession session) {
-        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
-        if (!"STUDENT".equals(role)) {
-            throw new UnauthorizedException("Student login required to view your borrowed books");
-        }
-        Long memberId = (Long) session.getAttribute(AuthController.SESSION_MEMBER_ID_KEY);
-        List<Loan> myLoans = loanService.getLoansByMemberId(memberId);
+    public ResponseEntity<ApiResponse<List<Loan>>> getMyLoans(
+            HttpServletRequest request,
+            HttpSession session) {
+        Member student = resolveStudent(session, request);
+        List<Loan> myLoans = loanService.getLoansByMemberId(student.getId());
         return ResponseEntity.ok(ApiResponse.ok("Student borrowed books retrieved", myLoans));
     }
 
     @PostMapping("/student/borrow/{bookId}")
     public ResponseEntity<ApiResponse<Loan>> studentBorrowBook(
             @PathVariable Long bookId,
+            HttpServletRequest request,
             HttpSession session) {
-        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
-        if (!"STUDENT".equals(role)) {
-            throw new UnauthorizedException("Student login required to borrow a book");
-        }
-        Long memberId = (Long) session.getAttribute(AuthController.SESSION_MEMBER_ID_KEY);
-        Loan loan = loanService.issueBook(bookId, memberId);
+        Member student = resolveStudent(session, request);
+        Loan loan = loanService.issueBook(bookId, student.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Book borrowed successfully! Due in 14 days.", loan));
     }
@@ -87,13 +128,10 @@ public class LoanController {
     @PutMapping("/student/return/{loanId}")
     public ResponseEntity<ApiResponse<Loan>> studentReturnBook(
             @PathVariable Long loanId,
+            HttpServletRequest request,
             HttpSession session) {
-        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
-        if (!"STUDENT".equals(role)) {
-            throw new UnauthorizedException("Student login required to return a book");
-        }
-        Long memberId = (Long) session.getAttribute(AuthController.SESSION_MEMBER_ID_KEY);
-        Loan loan = loanService.getLoansByMemberId(memberId).stream()
+        Member student = resolveStudent(session, request);
+        Loan loan = loanService.getLoansByMemberId(student.getId()).stream()
                 .filter(l -> l.getId().equals(loanId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Loan record not found for your account"));

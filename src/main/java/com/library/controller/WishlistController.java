@@ -1,9 +1,12 @@
 package com.library.controller;
 
 import com.library.dto.ApiResponse;
+import com.library.entity.Member;
 import com.library.entity.Wishlist;
 import com.library.exception.UnauthorizedException;
+import com.library.repository.MemberRepository;
 import com.library.service.WishlistService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,31 +35,62 @@ import java.util.Map;
 public class WishlistController {
 
     private final WishlistService wishlistService;
+    private final MemberRepository memberRepository;
 
-    public WishlistController(WishlistService wishlistService) {
+    public WishlistController(WishlistService wishlistService, MemberRepository memberRepository) {
         this.wishlistService = wishlistService;
+        this.memberRepository = memberRepository;
     }
 
-    private Long resolveMemberId(HttpSession session, Long fallbackMemberId) {
+    private Long resolveMemberId(HttpSession session, HttpServletRequest request, Long fallbackMemberId) {
         Long sessionMemberId = (Long) session.getAttribute(AuthController.SESSION_MEMBER_ID_KEY);
-        if (sessionMemberId != null) {
+        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
+        if ("STUDENT".equals(role) && sessionMemberId != null) {
             return sessionMemberId;
         }
+
+        // Restore from X-Student-Id header
+        String headerId = request.getHeader("X-Student-Id");
+        if (headerId != null && !headerId.trim().isEmpty()) {
+            try {
+                Long id = Long.parseLong(headerId.trim());
+                Member member = memberRepository.findById(id).orElse(null);
+                if (member != null && member.isActive()) {
+                    session.setAttribute(AuthController.SESSION_ROLE_KEY, "STUDENT");
+                    session.setAttribute(AuthController.SESSION_MEMBER_ID_KEY, member.getId());
+                    session.setAttribute(AuthController.SESSION_USER_KEY, member.getName());
+                    session.setAttribute(AuthController.SESSION_EMAIL_KEY, member.getEmail());
+                    return member.getId();
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // Restore from X-Student-Email header
+        String headerEmail = request.getHeader("X-Student-Email");
+        if (headerEmail != null && !headerEmail.trim().isEmpty()) {
+            Member member = memberRepository.findByEmailIgnoreCase(headerEmail.trim()).orElse(null);
+            if (member != null && member.isActive()) {
+                session.setAttribute(AuthController.SESSION_ROLE_KEY, "STUDENT");
+                session.setAttribute(AuthController.SESSION_MEMBER_ID_KEY, member.getId());
+                session.setAttribute(AuthController.SESSION_USER_KEY, member.getName());
+                session.setAttribute(AuthController.SESSION_EMAIL_KEY, member.getEmail());
+                return member.getId();
+            }
+        }
+
         if (fallbackMemberId != null) {
             return fallbackMemberId;
         }
-        String role = (String) session.getAttribute(AuthController.SESSION_ROLE_KEY);
-        if (!"STUDENT".equals(role)) {
-            throw new UnauthorizedException("Student login required to access wishlist");
-        }
-        throw new UnauthorizedException("Student session not found. Please log in.");
+
+        throw new UnauthorizedException("Student login required to access wishlist");
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlist(
             @RequestParam(value = "memberId", required = false) Long queryMemberId,
+            HttpServletRequest request,
             HttpSession session) {
-        Long memberId = resolveMemberId(session, queryMemberId);
+        Long memberId = resolveMemberId(session, request, queryMemberId);
         List<Wishlist> wishlist = wishlistService.getMemberWishlist(memberId);
         return ResponseEntity.ok(ApiResponse.ok("Wishlist retrieved successfully", wishlist));
     }
@@ -64,8 +98,9 @@ public class WishlistController {
     @GetMapping("/ids")
     public ResponseEntity<ApiResponse<List<Long>>> getWishlistBookIds(
             @RequestParam(value = "memberId", required = false) Long queryMemberId,
+            HttpServletRequest request,
             HttpSession session) {
-        Long memberId = resolveMemberId(session, queryMemberId);
+        Long memberId = resolveMemberId(session, request, queryMemberId);
         List<Long> ids = wishlistService.getWishlistBookIds(memberId);
         return ResponseEntity.ok(ApiResponse.ok("Wishlist book IDs retrieved", ids));
     }
@@ -74,8 +109,9 @@ public class WishlistController {
     public ResponseEntity<ApiResponse<Wishlist>> addToWishlist(
             @PathVariable Long bookId,
             @RequestParam(value = "memberId", required = false) Long queryMemberId,
+            HttpServletRequest request,
             HttpSession session) {
-        Long memberId = resolveMemberId(session, queryMemberId);
+        Long memberId = resolveMemberId(session, request, queryMemberId);
         Wishlist wishlist = wishlistService.addToWishlist(bookId, memberId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Book added to your wishlist ❤️", wishlist));
@@ -85,8 +121,9 @@ public class WishlistController {
     public ResponseEntity<ApiResponse<Void>> removeFromWishlist(
             @PathVariable Long bookId,
             @RequestParam(value = "memberId", required = false) Long queryMemberId,
+            HttpServletRequest request,
             HttpSession session) {
-        Long memberId = resolveMemberId(session, queryMemberId);
+        Long memberId = resolveMemberId(session, request, queryMemberId);
         wishlistService.removeFromWishlist(bookId, memberId);
         return ResponseEntity.ok(ApiResponse.ok("Book removed from wishlist", null));
     }
@@ -95,8 +132,9 @@ public class WishlistController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> toggleWishlist(
             @PathVariable Long bookId,
             @RequestParam(value = "memberId", required = false) Long queryMemberId,
+            HttpServletRequest request,
             HttpSession session) {
-        Long memberId = resolveMemberId(session, queryMemberId);
+        Long memberId = resolveMemberId(session, request, queryMemberId);
         boolean added = wishlistService.toggleWishlist(bookId, memberId);
         Map<String, Object> data = new HashMap<>();
         data.put("bookId", bookId);

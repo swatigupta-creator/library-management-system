@@ -71,7 +71,7 @@ async function loadStudentDrawerLoans() {
     if (!tbody || !quickCount) return;
 
     try {
-        const res = await fetch(`${API_BASE}/api/loans/my-loans`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/loans/my-loans`);
         const json = await parseJsonResponse(res);
         if (res.ok && json.success && Array.isArray(json.data)) {
             studentLoans = json.data;
@@ -129,7 +129,7 @@ async function handleDrawerReturn(loanId) {
     if (!confirm(`Confirm return of "${bookTitle}"?`)) return;
 
     try {
-        const res = await fetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT', credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/loans/student/return/${loanId}`, { method: 'PUT' });
         const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' returned successfully!`, 'success');
@@ -153,7 +153,7 @@ async function loadStudentWishlist() {
     if (!quickCount) return;
 
     try {
-        const res = await fetch(`${API_BASE}/api/wishlist`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/wishlist`);
         const json = await parseJsonResponse(res);
         if (res.ok && json.success && Array.isArray(json.data)) {
             studentWishlist = json.data;
@@ -239,9 +239,8 @@ async function handleToggleWishlist(bookId) {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
-            method: 'POST',
-            credentials: 'include'
+        const res = await apiFetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
+            method: 'POST'
         });
         const json = await parseJsonResponse(res);
         if (res.ok && json.success) {
@@ -279,7 +278,7 @@ async function handleStudentBorrow(bookId) {
     }
 
     try {
-        const res = await fetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST', credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/loans/student/borrow/${bookId}`, { method: 'POST' });
         const json = await parseJsonResponse(res);
 
         if (res.ok && json.success) {
@@ -288,7 +287,15 @@ async function handleStudentBorrow(bookId) {
             await loadStudentWishlist();
             await loadBooks();
         } else {
-            showAlert(json.message || 'Failed to borrow book', 'error');
+            if (res.status === 401) {
+                currentAuth = { authenticated: false, role: null };
+                clearStoredAuth();
+                updateNavbar(currentAuth);
+                openRoleModal();
+                showAlert('Student login required or session expired. Please log in.', 'info');
+            } else {
+                showAlert(json.message || 'Failed to borrow book', 'error');
+            }
         }
     } catch (e) {
         showAlert('Error borrowing book: ' + e.message, 'error');
@@ -703,10 +710,9 @@ async function handleStudentLogin(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/auth/student/login`, {
+        const res = await apiFetch(`${API_BASE}/api/auth/student/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
         const json = await parseJsonResponse(res);
@@ -715,9 +721,11 @@ async function handleStudentLogin(e) {
             showAlert('Login successful! Welcome to Student Portal.', 'success');
             closeRoleModal();
             currentAuth = json.data;
+            setStoredAuth(currentAuth);
             updateNavbar(currentAuth);
             showStudentQuickBar(currentAuth);
             await loadStudentDrawerLoans();
+            await loadStudentWishlist();
             adjustAdminControls();
             loadBooks();
         } else {
@@ -747,10 +755,9 @@ async function handleStudentRegister(e) {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/api/auth/student/register`, {
+        const res = await apiFetch(`${API_BASE}/api/auth/student/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(payload)
         });
         const json = await parseJsonResponse(res);
@@ -759,9 +766,11 @@ async function handleStudentRegister(e) {
             showAlert('Account created successfully! Welcome, ' + payload.name + '!', 'success');
             closeRoleModal();
             currentAuth = json.data;
+            setStoredAuth(currentAuth);
             updateNavbar(currentAuth);
             showStudentQuickBar(currentAuth);
             await loadStudentDrawerLoans();
+            await loadStudentWishlist();
             adjustAdminControls();
             loadBooks();
         } else {

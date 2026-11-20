@@ -7,6 +7,70 @@ const API_BASE = (window.location.port === '8080')
     ? ''
     : 'http://localhost:8080';
 
+const AUTH_STORAGE_KEY = 'bbau_lms_auth';
+
+function getStoredAuth() {
+    try {
+        const item = localStorage.getItem(AUTH_STORAGE_KEY);
+        return item ? JSON.parse(item) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function setStoredAuth(auth) {
+    try {
+        if (auth && auth.authenticated) {
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+        } else {
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
+    } catch (e) {}
+}
+
+function clearStoredAuth() {
+    try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (e) {}
+}
+
+/**
+ * Universal API Fetch wrapper that handles:
+ * - Credentials (cookies)
+ * - Persistent student headers (X-Student-Id, X-Student-Email) across server restarts
+ * - Smooth 401 Unauthorized handling
+ */
+async function apiFetch(url, options = {}) {
+    const opts = { ...options };
+    opts.credentials = 'include';
+    opts.headers = { ...(opts.headers || {}) };
+
+    const storedAuth = getStoredAuth();
+    if (storedAuth && storedAuth.role === 'STUDENT') {
+        if (storedAuth.memberId) opts.headers['X-Student-Id'] = String(storedAuth.memberId);
+        if (storedAuth.email) opts.headers['X-Student-Email'] = String(storedAuth.email);
+    }
+
+    const res = await fetch(url, opts);
+
+    // If session expired or unauthorized
+    if (res.status === 401) {
+        const clone = res.clone();
+        try {
+            const body = await clone.json();
+            if (body && body.message && body.message.toLowerCase().includes('login required')) {
+                clearStoredAuth();
+                updateNavbar({ authenticated: false, role: null });
+                if (typeof openRoleModal === 'function') {
+                    openRoleModal();
+                }
+            }
+        } catch (ignored) {}
+    }
+
+    return res;
+}
+
 /**
  * Safely parse JSON from a fetch Response.
  * Detects if the server or file system returned an HTML error page (e.g. 404, file not found)
@@ -60,15 +124,18 @@ function showAlert(message, type = 'info') {
  */
 async function checkAuthStatus() {
     try {
-        const res = await fetch(`${API_BASE}/api/auth/status`, { credentials: 'include' });
+        const res = await apiFetch(`${API_BASE}/api/auth/status`);
         const json = await parseJsonResponse(res);
-        if (json.success && json.data) {
+        if (json.success && json.data && json.data.authenticated) {
+            setStoredAuth(json.data);
             return json.data;
         }
+        clearStoredAuth();
         return { authenticated: false, role: null };
     } catch (e) {
         console.warn('Failed to check auth status', e);
-        return { authenticated: false, role: null };
+        const stored = getStoredAuth();
+        return stored || { authenticated: false, role: null };
     }
 }
 
@@ -115,15 +182,13 @@ function updateNavbar(auth) {
  */
 async function logout() {
     try {
-        const res = await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
-        const data = await parseJsonResponse(res);
-        showAlert('Logged out successfully', 'success');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 400);
-    } catch (e) {
-        showAlert('Logout failed: ' + e.message, 'error');
-    }
+        await apiFetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
+    } catch (e) {}
+    clearStoredAuth();
+    showAlert('Logged out successfully', 'success');
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 400);
 }
 
 /**

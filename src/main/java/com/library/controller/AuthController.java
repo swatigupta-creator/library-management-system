@@ -8,6 +8,7 @@ import com.library.dto.StudentRegisterRequest;
 import com.library.entity.Member;
 import com.library.exception.LibraryException;
 import com.library.repository.MemberRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -169,8 +170,42 @@ public class AuthController {
     // 4. Session Status Check
     // -------------------------------------------------------------
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getStatus(HttpSession session) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getStatus(
+            HttpServletRequest request,
+            HttpSession session) {
         String role = (String) session.getAttribute(SESSION_ROLE_KEY);
+
+        // If session was lost (e.g. server restart) but client has persistent student identity, restore session
+        if (role == null) {
+            String headerId = request.getHeader("X-Student-Id");
+            String headerEmail = request.getHeader("X-Student-Email");
+
+            if (headerId != null && !headerId.trim().isEmpty()) {
+                try {
+                    Long id = Long.parseLong(headerId.trim());
+                    Optional<Member> memberOpt = memberRepository.findById(id);
+                    if (memberOpt.isPresent() && memberOpt.get().isActive()) {
+                        Member member = memberOpt.get();
+                        session.setAttribute(SESSION_ROLE_KEY, "STUDENT");
+                        session.setAttribute(SESSION_USER_KEY, member.getName());
+                        session.setAttribute(SESSION_EMAIL_KEY, member.getEmail());
+                        session.setAttribute(SESSION_MEMBER_ID_KEY, member.getId());
+                        role = "STUDENT";
+                    }
+                } catch (NumberFormatException ignored) {}
+            } else if (headerEmail != null && !headerEmail.trim().isEmpty()) {
+                Optional<Member> memberOpt = memberRepository.findByEmailIgnoreCase(headerEmail.trim());
+                if (memberOpt.isPresent() && memberOpt.get().isActive()) {
+                    Member member = memberOpt.get();
+                    session.setAttribute(SESSION_ROLE_KEY, "STUDENT");
+                    session.setAttribute(SESSION_USER_KEY, member.getName());
+                    session.setAttribute(SESSION_EMAIL_KEY, member.getEmail());
+                    session.setAttribute(SESSION_MEMBER_ID_KEY, member.getId());
+                    role = "STUDENT";
+                }
+            }
+        }
+
         boolean authenticated = role != null;
 
         Map<String, Object> data = new HashMap<>();
