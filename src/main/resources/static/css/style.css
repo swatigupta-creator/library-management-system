@@ -716,3 +716,51 @@ footer {
     font-size: 2.75rem;
     margin-bottom: 0.75rem;
 }
+
+/* ==============================================================
+   Wishlist Feature Styles
+   ============================================================== */
+.btn-wishlist {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.65rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid #fecdd3;
+    background: #fff1f2;
+    color: #e11d48;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.btn-wishlist:hover {
+    background: #ffe4e6;
+    border-color: #fda4af;
+    transform: translateY(-1px);
+}
+
+.btn-wishlist.active {
+    background: #e11d48;
+    color: #ffffff;
+    border-color: #be123c;
+    box-shadow: 0 2px 5px rgba(225, 29, 72, 0.28);
+}
+
+.btn-wishlist.active:hover {
+    background: #be123c;
+}
+
+.wishlist-pill-badge {
+    background: #e11d48;
+    color: white;
+    border-radius: 9999px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-left: 0.35rem;
+}

@@ -96,6 +96,39 @@
             </div>
         </section>
 
+        <!-- Student Personal Section: My Saved Wishlist (Visible only when logged in as Student) -->
+        <section id="student-wishlist-section" style="display: none; margin-bottom: 2rem;">
+            <div class="table-card" style="border-top: 3px solid #e11d48;">
+                <div class="table-header">
+                    <div>
+                        <h2 style="color: #be123c;">❤️ My Saved Wishlist</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Books you saved to read or borrow later. Borrow directly or manage your wishlist.</p>
+                    </div>
+                    <span id="student-wishlist-count" style="font-size: 0.9rem; color: #be123c; font-weight: 700;">Loading...</span>
+                </div>
+                <div class="responsive-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Available Copies</th>
+                                <th>Status</th>
+                                <th style="width: 170px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-wishlist-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading your wishlist...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- Live Books Catalog & Search (Visible to Everyone directly on Home Page!) -->
         <section id="catalog-section" style="margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
@@ -143,7 +176,7 @@
                                 <th>ISBN</th>
                                 <th>Available Copies</th>
                                 <th>Status</th>
-                                <th style="width: 140px;">Action</th>
+                                <th style="width: 180px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="home-books-tbody">
@@ -407,6 +440,8 @@
         let currentAuth = null;
         let homeBooks = [];
         let studentLoansList = [];
+        let studentWishlist = [];
+        let homeWishlistedBookIds = new Set();
 
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Check user authentication
@@ -422,6 +457,7 @@
                 setupUserHero(currentAuth);
                 if (currentAuth.role === 'STUDENT') {
                     await loadStudentLoans();
+                    await loadStudentWishlist();
                 }
             }
 
@@ -523,6 +559,7 @@
                     updateNavbar(currentAuth);
                     setupUserHero(currentAuth);
                     await loadStudentLoans();
+                    await loadStudentWishlist();
                     await loadHomeBooks();
                     loadStats();
                 } else {
@@ -637,6 +674,7 @@
             document.getElementById('hero-guest-msg').style.display = 'block';
             document.getElementById('hero-logged-msg').style.display = 'none';
             document.getElementById('student-loans-section').style.display = 'none';
+            document.getElementById('student-wishlist-section').style.display = 'none';
             document.getElementById('admin-home-actions').style.display = 'none';
         }
 
@@ -654,12 +692,17 @@
                 desc.textContent = 'You have administrative control to manage books inventory, members, book issues, and returns.';
                 roleBtn.innerHTML = `<a href="librarian.html" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">⚙️ Go to Librarian Dashboard</a>`;
                 document.getElementById('student-loans-section').style.display = 'none';
+                document.getElementById('student-wishlist-section').style.display = 'none';
                 if (adminActions) adminActions.style.display = 'block';
             } else if (auth.role === 'STUDENT') {
                 title.textContent = `Welcome, ${escapeHtml(auth.name)}! (BBAU Student)`;
-                desc.textContent = 'Search books in the catalog, check live availability, borrow books instantly, and track your active loans below.';
-                roleBtn.innerHTML = `<a href="#student-loans-section" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">📖 View My Borrowed Books</a>`;
+                desc.textContent = 'Search books in the catalog, check live availability, borrow books instantly, and manage your wishlist.';
+                roleBtn.innerHTML = `
+                    <a href="#student-loans-section" class="btn btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);">📖 Borrowed Books</a>
+                    <a href="#student-wishlist-section" class="btn btn-primary" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); margin-left: 0.4rem;">❤️ My Wishlist</a>
+                `;
                 document.getElementById('student-loans-section').style.display = 'block';
+                document.getElementById('student-wishlist-section').style.display = 'block';
                 if (adminActions) adminActions.style.display = 'none';
             }
         }
@@ -718,6 +761,99 @@
         }
 
         // -------------------------------------------------------------
+        // Load Student's Personal Wishlist
+        // -------------------------------------------------------------
+        async function loadStudentWishlist() {
+            const tbody = document.getElementById('student-wishlist-tbody');
+            const countLabel = document.getElementById('student-wishlist-count');
+            if (!tbody || !countLabel) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/wishlist`, { credentials: 'include' });
+                const json = await parseJsonResponse(res);
+
+                if (res.ok && json.success && Array.isArray(json.data)) {
+                    studentWishlist = json.data;
+                    homeWishlistedBookIds = new Set(studentWishlist.map(w => w.book ? w.book.id : null).filter(Boolean));
+                    countLabel.textContent = `${studentWishlist.length} saved books`;
+
+                    if (studentWishlist.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #be123c;">
+                                    Your wishlist is currently empty. Explore the catalog below and click <strong>"🤍 Wishlist"</strong> to save any book!
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    tbody.innerHTML = studentWishlist.map((item, idx) => {
+                        const b = item.book;
+                        if (!b) return '';
+                        const isAvailable = b.availableCopies > 0;
+                        const badgeClass = isAvailable ? 'badge-available' : 'badge-unavailable';
+                        const badgeText = isAvailable ? `Available (${b.availableCopies}/${b.totalCopies})` : `Out of Stock (0/${b.totalCopies})`;
+
+                        const borrowBtn = isAvailable
+                            ? `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;">📥 Borrow</button>`
+                            : `<span style="font-size: 0.78rem; color: var(--text-muted);">Out of Stock</span>`;
+
+                        const removeBtn = `<button class="btn btn-danger btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.8rem;" title="Remove from Wishlist">🗑️ Remove</button>`;
+
+                        return `
+                            <tr>
+                                <td>${idx + 1}</td>
+                                <td style="font-weight: 600; color: var(--primary);">${escapeHtml(b.title)}</td>
+                                <td>${escapeHtml(b.author)}</td>
+                                <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.82rem;">${escapeHtml(b.category)}</span></td>
+                                <td style="font-weight: 600;">${b.availableCopies} / ${b.totalCopies}</td>
+                                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                                <td>
+                                    <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                        ${borrowBtn}
+                                        ${removeBtn}
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load student wishlist', e);
+            }
+        }
+
+        async function handleToggleWishlist(bookId) {
+            if (!currentAuth || !currentAuth.authenticated) {
+                showAlert('Please login as a student to add books to your wishlist', 'info');
+                openRoleModal();
+                return;
+            }
+            if (currentAuth.role !== 'STUDENT') {
+                showAlert('Wishlist is available for student accounts. Please login as a student.', 'info');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const json = await parseJsonResponse(res);
+                if (res.ok && json.success) {
+                    showAlert(json.message || 'Wishlist updated', 'success');
+                    await loadStudentWishlist();
+                    renderHomeBooksTable();
+                } else {
+                    showAlert(json.message || 'Failed to update wishlist', 'error');
+                }
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            }
+        }
+
+        // -------------------------------------------------------------
         // Student Action: Return Book
         // -------------------------------------------------------------
         async function handleStudentReturn(loanId) {
@@ -734,6 +870,7 @@
                 if (res.ok && json.success) {
                     showAlert(`Book '${bookTitle}' returned successfully! Copy restored to library.`, 'success');
                     await loadStudentLoans();
+                    await loadStudentWishlist();
                     await loadHomeBooks();
                     loadStats();
                 } else {
@@ -773,6 +910,7 @@
                 if (res.ok && json.success) {
                     showAlert(`Book '${bookTitle}' borrowed successfully! Due in 14 days.`, 'success');
                     await loadStudentLoans();
+                    await loadStudentWishlist();
                     await loadHomeBooks();
                     loadStats();
                 } else {
@@ -858,15 +996,28 @@
 
                 let actionHtml = '';
                 if (isStudent) {
+                    const isWishlisted = homeWishlistedBookIds.has(b.id);
+                    const heartIcon = isWishlisted ? '❤️' : '🤍';
+                    const heartTitle = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
+                    const heartBtnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
+                    const wishlistBtn = `<button class="${heartBtnClass}" onclick="handleToggleWishlist(${b.id})" title="${heartTitle}">${heartIcon} <span style="font-size:0.75rem;">${isWishlisted ? 'Wishlisted' : 'Wishlist'}</span></button>`;
+
+                    let borrowBtn = '';
                     if (isAvailable) {
-                        actionHtml = `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">📥 Borrow Book</button>`;
+                        borrowBtn = `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">📥 Borrow</button>`;
                     } else {
-                        actionHtml = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; padding: 0.3rem 0.7rem; font-size: 0.8rem;">Out of Stock</button>`;
+                        borrowBtn = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; padding: 0.3rem 0.65rem; font-size: 0.8rem;">Out of Stock</button>`;
                     }
+                    actionHtml = `<div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">${borrowBtn} ${wishlistBtn}</div>`;
                 } else if (isAdmin) {
-                    actionHtml = `<a href="/librarian.html" class="btn btn-outline btn-sm" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">Manage in Portal</a>`;
+                    actionHtml = `<a href="librarian.html" class="btn btn-outline btn-sm" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">Manage in Portal</a>`;
                 } else {
-                    actionHtml = `<button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">🔑 Login to Borrow</button>`;
+                    actionHtml = `
+                        <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">
+                            <button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">🔑 Login</button>
+                            <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">🤍 Wishlist</button>
+                        </div>
+                    `;
                 }
 
                 return `

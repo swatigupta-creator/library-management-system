@@ -1,6 +1,7 @@
 package com.library.entity;
 
 import com.library.constant.LibraryConstants;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -16,6 +17,7 @@ public class Member extends Person {
     @Column(nullable = false, length = 30)
     private String status;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 100)
     private String password = "password123";
 

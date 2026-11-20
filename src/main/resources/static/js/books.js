@@ -7,6 +7,8 @@
 let allBooks = [];
 let currentAuth = null;
 let studentLoans = [];
+let studentWishlist = [];
+let wishlistedBookIds = new Set();
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Check user authentication
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (currentAuth.role === 'STUDENT') {
         showStudentQuickBar(currentAuth);
         await loadStudentDrawerLoans();
+        await loadStudentWishlist();
     }
 
     // 2. Adjust Admin Controls visibility
@@ -131,12 +134,125 @@ async function handleDrawerReturn(loanId) {
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' returned successfully!`, 'success');
             await loadStudentDrawerLoans();
+            await loadStudentWishlist();
             await loadBooks();
         } else {
             showAlert(json.message || 'Failed to return book', 'error');
         }
     } catch (e) {
         showAlert('Error: ' + e.message, 'error');
+    }
+}
+
+// --------------------------------------------------------------
+// Student Wishlist Functions
+// --------------------------------------------------------------
+async function loadStudentWishlist() {
+    const tbody = document.getElementById('drawer-wishlist-tbody');
+    const quickCount = document.getElementById('student-wishlist-quick-count');
+    if (!quickCount) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/wishlist`, { credentials: 'include' });
+        const json = await parseJsonResponse(res);
+        if (res.ok && json.success && Array.isArray(json.data)) {
+            studentWishlist = json.data;
+            wishlistedBookIds = new Set(studentWishlist.map(w => w.book ? w.book.id : null).filter(Boolean));
+            quickCount.textContent = studentWishlist.length;
+
+            if (!tbody) return;
+
+            if (studentWishlist.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 1.5rem; color: #be123c;">Your wishlist is empty. Click 🤍 Wishlist on any book in the catalog below to save it here!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = studentWishlist.map((item, idx) => {
+                const b = item.book;
+                if (!b) return '';
+                const isAvailable = b.availableCopies > 0;
+                const badgeClass = isAvailable ? 'badge-available' : 'badge-unavailable';
+                const badgeText = isAvailable
+                    ? `Available (${b.availableCopies}/${b.totalCopies})`
+                    : `Out of Stock (0/${b.totalCopies})`;
+
+                const borrowBtn = isAvailable
+                    ? `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">📥 Borrow</button>`
+                    : `<span style="font-size:0.75rem; color:var(--text-muted);">Out of Stock</span>`;
+
+                const removeBtn = `<button class="btn btn-danger btn-sm" onclick="handleToggleWishlist(${b.id})" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;" title="Remove from Wishlist">🗑️ Remove</button>`;
+
+                return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td style="font-weight: 600; color: var(--primary);">${escapeHtml(b.title)}</td>
+                        <td>${escapeHtml(b.author)}</td>
+                        <td><span style="background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.82rem;">${escapeHtml(b.category)}</span></td>
+                        <td style="font-weight: 600;">${b.availableCopies} / ${b.totalCopies}</td>
+                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                ${borrowBtn}
+                                ${removeBtn}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    } catch (e) {
+        console.error('Failed to load student wishlist', e);
+    }
+}
+
+function toggleStudentWishlistView() {
+    const drawer = document.getElementById('student-wishlist-drawer');
+    const btn = document.getElementById('btn-toggle-wishlist');
+    if (!drawer) return;
+
+    if (drawer.style.display === 'none' || drawer.style.display === '') {
+        drawer.style.display = 'block';
+        if (btn) btn.textContent = '▲ Hide Wishlist';
+        // Close loans drawer if open
+        const loansDrawer = document.getElementById('student-loans-drawer');
+        const loansBtn = document.getElementById('btn-toggle-loans');
+        if (loansDrawer) loansDrawer.style.display = 'none';
+        if (loansBtn) {
+            const activeCount = studentLoans.filter(l => l.status === 'ISSUED').length;
+            loansBtn.textContent = `📖 My Borrowed Books (${activeCount})`;
+        }
+    } else {
+        drawer.style.display = 'none';
+        if (btn) btn.textContent = `❤️ My Wishlist (${studentWishlist.length})`;
+    }
+}
+
+async function handleToggleWishlist(bookId) {
+    if (!currentAuth || !currentAuth.authenticated) {
+        showAlert('Please login as a student to add books to your wishlist', 'info');
+        openRoleModal();
+        return;
+    }
+    if (currentAuth.role !== 'STUDENT') {
+        showAlert('Wishlist is available for students. Log in with your student account.', 'info');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/wishlist/toggle/${bookId}`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const json = await parseJsonResponse(res);
+        if (res.ok && json.success) {
+            showAlert(json.message || 'Wishlist updated', 'success');
+            await loadStudentWishlist();
+            filterAndRenderBooks();
+        } else {
+            showAlert(json.message || 'Could not update wishlist', 'error');
+        }
+    } catch (err) {
+        showAlert('Error updating wishlist: ' + err.message, 'error');
     }
 }
 
@@ -169,6 +285,7 @@ async function handleStudentBorrow(bookId) {
         if (res.ok && json.success) {
             showAlert(`Book '${bookTitle}' borrowed successfully! Due in 14 days.`, 'success');
             await loadStudentDrawerLoans();
+            await loadStudentWishlist();
             await loadBooks();
         } else {
             showAlert(json.message || 'Failed to borrow book', 'error');
@@ -290,13 +407,36 @@ function renderBooksTable(books) {
                 </td>
             `;
         } else if (isStudent) {
+            const isWishlisted = wishlistedBookIds.has(b.id);
+            const heartIcon = isWishlisted ? '❤️' : '🤍';
+            const heartTitle = isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist';
+            const heartBtnClass = isWishlisted ? 'btn-wishlist active' : 'btn-wishlist';
+            const wishlistBtn = `<button class="${heartBtnClass}" onclick="handleToggleWishlist(${b.id})" title="${heartTitle}">${heartIcon} <span style="font-size:0.75rem;">${isWishlisted ? 'Wishlisted' : 'Wishlist'}</span></button>`;
+
+            let borrowBtn = '';
             if (isAvailable) {
-                actionTd = `<td><button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.3rem 0.75rem; font-size: 0.8rem;">📥 Borrow</button></td>`;
+                borrowBtn = `<button class="btn btn-primary btn-sm" onclick="handleStudentBorrow(${b.id})" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">📥 Borrow</button>`;
             } else {
-                actionTd = `<td><button class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; padding: 0.3rem 0.75rem; font-size: 0.8rem;">Out of Stock</button></td>`;
+                borrowBtn = `<button class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; padding: 0.3rem 0.65rem; font-size: 0.8rem;">Out of Stock</button>`;
             }
+
+            actionTd = `
+                <td>
+                    <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">
+                        ${borrowBtn}
+                        ${wishlistBtn}
+                    </div>
+                </td>
+            `;
         } else {
-            actionTd = `<td><button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.75rem; font-size: 0.8rem;">🔑 Login to Borrow</button></td>`;
+            actionTd = `
+                <td>
+                    <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: nowrap;">
+                        <button class="btn btn-outline btn-sm" onclick="openRoleModal()" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">🔑 Login</button>
+                        <button class="btn-wishlist" onclick="handleToggleWishlist(${b.id})" title="Login to save to wishlist">🤍 Wishlist</button>
+                    </div>
+                </td>
+            `;
         }
 
         return `
