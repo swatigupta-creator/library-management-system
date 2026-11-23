@@ -36,7 +36,10 @@ public class LibraryFxApp extends Application {
         primaryStage.setHeight(750);
 
         try {
-            InputStream iconStream = getClass().getResourceAsStream("/static/images/bbau-logo.png");
+            InputStream iconStream = getClass().getResourceAsStream("/images/bbau-logo.png");
+            if (iconStream == null) {
+                iconStream = getClass().getResourceAsStream("/static/images/bbau-logo.png");
+            }
             if (iconStream != null) {
                 primaryStage.getIcons().add(new Image(iconStream));
             }
