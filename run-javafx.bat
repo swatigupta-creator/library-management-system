@@ -7,5 +7,14 @@ echo ==============================================================
 echo.
 echo Launching JavaFX Desktop Application...
 echo.
-call mvn clean compile spring-boot:run
+
+set "MVN_CMD=mvn"
+where mvn >nul 2>&1
+if %errorlevel% neq 0 (
+    if exist "C:\Program Files\JetBrains\IntelliJ IDEA 2026.1\plugins\maven\lib\maven3\bin\mvn.cmd" (
+        set "MVN_CMD=C:\Program Files\JetBrains\IntelliJ IDEA 2026.1\plugins\maven\lib\maven3\bin\mvn.cmd"
+    )
+)
+
+call "%MVN_CMD%" spring-boot:run
 pause
